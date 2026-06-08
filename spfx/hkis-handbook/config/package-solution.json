@@ -1,0 +1,46 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "hkis-handbook-client-side-solution",
+    "id": "73110c02-1e20-464a-bf60-f34e9c6fec2b",
+    "version": "1.0.7.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "HKIS Teaching & Learning Handbook",
+      "websiteUrl": "https://hkis.sharepoint.com/sites/Curriculum",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.23.0"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "HKIS Teaching & Learning Handbook experience for the Curriculum site (toolbar, sidebar nav, themes, glossary tooltips, search). Activates only on /SitePages/Home1.aspx."
+      },
+      "longDescription": {
+        "default": "Two Application Customizers that progressively enhance the HKIS Teaching & Learning Handbook page (Home1.aspx) on the Curriculum site. Adds a fixed toolbar, anchor-driven sidebar navigation, light/sepia/dark themes, FAQ collapsibles, pull-quote callouts, restyled Quick-Start CTA tiles, content search, and glossary-term hover tooltips driven by the site's Glossary list. URL-guarded to one page only — no impact on other content on the site."
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "Application Extension - Deployment of custom action",
+        "description": "Deploys a custom action with ClientSideComponentId association",
+        "id": "e92fcd2c-93d3-44d3-b657-b4ea5dd1756a",
+        "version": "1.0.7.0",
+        "assets": {
+          "elementManifests": [
+            "elements.xml",
+            "ClientSideInstance.xml"
+          ]
+        }
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/hkis-handbook.sppkg"
+  }
+}

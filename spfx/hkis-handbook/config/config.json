@@ -1,0 +1,27 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "handbook-experience-application-customizer": {
+      "components": [
+        {
+          "entrypoint": "./lib/extensions/handbookExperience/HandbookExperienceApplicationCustomizer.js",
+          "manifest": "./src/extensions/handbookExperience/HandbookExperienceApplicationCustomizer.manifest.json"
+        }
+      ]
+    },
+    "glossary-tooltips-application-customizer": {
+      "components": [
+        {
+          "entrypoint": "./lib/extensions/glossaryTooltips/GlossaryTooltipsApplicationCustomizer.js",
+          "manifest": "./src/extensions/glossaryTooltips/GlossaryTooltipsApplicationCustomizer.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "HandbookExperienceApplicationCustomizerStrings": "lib/extensions/handbookExperience/loc/{locale}.js",
+    "GlossaryTooltipsApplicationCustomizerStrings": "lib/extensions/glossaryTooltips/loc/{locale}.js"
+  }
+}

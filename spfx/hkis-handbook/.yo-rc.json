@@ -1,0 +1,24 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "whichFolder": "subdir",
+    "solutionName": "hkis-handbook",
+    "environment": "spo",
+    "packageManager": "npm",
+    "useGulp": true,
+    "componentType": "extension",
+    "extensionType": "ApplicationCustomizer",
+    "template": "none",
+    "componentName": "GlossaryTooltips",
+    "componentDescription": "Glossary term hover tooltips",
+    "plusBeta": false,
+    "isCreatingSolution": false,
+    "nodeVersion": "22.22.3",
+    "sdksVersions": {},
+    "version": "1.23.0",
+    "libraryName": "hkis-handbook",
+    "libraryId": "73110c02-1e20-464a-bf60-f34e9c6fec2b",
+    "solutionShortDescription": "hkis-handbook description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false
+  }
+}

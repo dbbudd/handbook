@@ -1,0 +1,221 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ☀️
+      - text: Morning Briefing
+    - heading "Wednesday, 3 June 2026" [level=1] [ref=e8]
+    - generic [ref=e9]:
+      - generic [ref=e10]: HS Day 6 · LP (B) Day 1
+      - generic [ref=e11]: 📍 Hong Kong
+      - generic [ref=e12]: 13:12 HKT
+  - generic [ref=e13]:
+    - generic [ref=e14]: 🌤
+    - generic [ref=e15]:
+      - text: 34°
+      - generic [ref=e16]: / 28°
+    - generic [ref=e17]: Very hot, mostly sunny, isolated afternoon showers
+    - generic [ref=e18]: 🌧 30% rain
+  - generic [ref=e19]:
+    - 'button "👨‍👩‍👧 Personal 1 appt Olivia’s physio at 2:30pm today (Megan attending) and an early pick-up via SchoolsBuddy. Swimming kit needed Thursday and Monday. 14:30 Olivia — Physio Olivia Olivia: physio 2:30 Early pick-up today Swim Thu & Mon" [ref=e20] [cursor=pointer]':
+      - generic [ref=e21]:
+        - generic [ref=e22]: 👨‍👩‍👧
+        - generic [ref=e23]: Personal
+        - generic [ref=e24]: 1 appt
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - strong [ref=e28]: Olivia’s physio at 2:30pm
+          - text: today (Megan attending) and an
+          - strong [ref=e29]: early pick-up
+          - text: via SchoolsBuddy. Swimming kit needed
+          - strong [ref=e30]: Thursday and Monday
+          - text: .
+        - generic [ref=e32]:
+          - generic [ref=e33]: 14:30
+          - generic [ref=e34]: Olivia — Physio
+          - generic [ref=e35]: Olivia
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]: 🏥
+          - text: "Olivia: physio 2:30"
+        - generic [ref=e39]:
+          - generic [ref=e40]: 🚌
+          - text: Early pick-up today
+        - generic [ref=e41]:
+          - generic [ref=e42]: 🏊
+          - text: Swim Thu & Mon
+    - button "📈 Finance 4 ▲ / 1 ▼ Apple at a record into WWDC (June 8), +2.9%; NVDA dips post-COMPUTEX despite the Vera Rubin reveal. AAPL ▲ +2.90% NVDA ▼ -0.75% TQQQ ▲ +1.80% QQQ ▲ +0.60% JEPQ ▲ +0.13% AAPL +2.9% NVDA −0.7%" [ref=e43] [cursor=pointer]:
+      - generic [ref=e44]:
+        - generic [ref=e45]: 📈
+        - generic [ref=e46]: Finance
+        - generic [ref=e47]: 4 ▲ / 1 ▼
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - text: Apple at a record into
+          - strong [ref=e51]: WWDC (June 8)
+          - text: ","
+          - emphasis [ref=e52]: +2.9%
+          - text: ;
+          - strong [ref=e53]: NVDA
+          - text: dips post-COMPUTEX despite the Vera Rubin reveal.
+        - generic [ref=e54]:
+          - generic [ref=e55]:
+            - strong [ref=e56]: AAPL
+            - generic [ref=e57]: ▲ +2.90%
+          - generic [ref=e58]:
+            - strong [ref=e59]: NVDA
+            - generic [ref=e60]: ▼ -0.75%
+          - generic [ref=e61]:
+            - strong [ref=e62]: TQQQ
+            - generic [ref=e63]: ▲ +1.80%
+          - generic [ref=e64]:
+            - strong [ref=e65]: QQQ
+            - generic [ref=e66]: ▲ +0.60%
+          - generic [ref=e67]:
+            - strong [ref=e68]: JEPQ
+            - generic [ref=e69]: ▲ +0.13%
+      - generic [ref=e70]:
+        - generic [ref=e71]:
+          - generic [ref=e72]: ▲
+          - text: AAPL +2.9%
+        - generic [ref=e73]:
+          - generic [ref=e74]: ▼
+          - text: NVDA −0.7%
+    - 'button "🏫 HKIS Week Day 6 / B1 Quiet on the calendar — HS Day 6 · LP (B) Day 1, no timed meetings showing today. Looking ahead: DLI R2 Parent Orientation Friday and the SAT administration Saturday morning. Inbox has both school newsletters plus two Academia.edu alerts. Fri: DLI orientation Sat: SAT 07:30 2 research alerts" [ref=e75] [cursor=pointer]':
+      - generic [ref=e76]:
+        - generic [ref=e77]: 🏫
+        - generic [ref=e78]: HKIS Week
+        - generic [ref=e79]: Day 6 / B1
+      - generic [ref=e82]:
+        - text: Quiet on the calendar —
+        - strong [ref=e83]: HS Day 6 · LP (B) Day 1
+        - text: ", no timed meetings showing today. Looking ahead:"
+        - strong [ref=e84]: DLI R2 Parent Orientation Friday
+        - text: and the
+        - strong [ref=e85]: SAT administration Saturday morning
+        - text: . Inbox has both school newsletters plus two Academia.edu alerts.
+      - generic [ref=e86]:
+        - generic [ref=e87]: "Fri: DLI orientation"
+        - generic [ref=e88]: "Sat: SAT 07:30"
+        - generic [ref=e89]:
+          - generic [ref=e90]: 🔬
+          - text: 2 research alerts
+  - generic [ref=e91]:
+    - generic [ref=e92]:
+      - generic [ref=e93]: 📰
+      - heading "Professional Reading" [level=2] [ref=e94]
+      - generic [ref=e95]: 6 stories
+    - generic [ref=e96]:
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - generic [ref=e99]:
+            - generic [ref=e100]: ⚡
+            - text: Lead story
+            - generic [ref=e101]: · Gulf
+          - link "Strait of Hormuz still effectively closed despite the ceasefire — Iran conditioning all transit" [ref=e103] [cursor=pointer]:
+            - /url: https://www.cbsnews.com/live-updates/iran-war-trump-strait-of-hormuz-ship-attack-threat-peace-proposal/
+          - generic [ref=e104]:
+            - text: The Gulf has shifted from the open missile-and-drone phase that defined February–April into a slow-burn maritime standoff. ADNOC’s CEO says the strait remains effectively shut even with the ceasefire in place, because Iran is restricting and conditioning who may transit; an ADNOC tanker was recently targeted by two drones while attempting passage, with no injuries. The direct barrage on the UAE has eased, but the chokepoint dispute is hardening rather than resolving.
+            - strong [ref=e105]: "→ so what:"
+            - text: for family in Abu Dhabi this now reads as a long-horizon economic-and-logistics risk, not an air-raid-siren one — day-to-day life is calmer than in spring, but expect continued supply friction and short-notice airspace caveats. Situational awareness, not alarm.
+          - generic [ref=e106]: CBS News
+        - generic [ref=e107]:
+          - button "Follow \"Strait of Hormuz still effectively closed despite the ceasefire — Iran conditioning all transit\"" [ref=e108] [cursor=pointer]:
+            - generic [ref=e109]: ☆
+            - text: Follow
+          - button "Mark read \"Strait of Hormuz still effectively closed despite the ceasefire — Iran conditioning all transit\"" [ref=e110] [cursor=pointer]:
+            - generic [ref=e111]: ○
+            - text: Mark read
+      - generic [ref=e112]:
+        - generic [ref=e113]:
+          - generic [ref=e115]: US K-12 policy
+          - generic [ref=e116]:
+            - link "NYC Department of Education to release its AI playbook this month" [ref=e117] [cursor=pointer]:
+              - /url: https://www.pursuit.us/news/ai-in-education-news-policies-innovations
+            - generic [ref=e118]: · Pursuit
+          - generic [ref=e119]: The largest US school district will publish AI guidance for staff and students this month, reportedly leading with guardrails and AI-literacy rather than detection tools or outright bans.
+          - generic [ref=e120]:
+            - generic [ref=e121]: "→ so what:"
+            - text: NYC DOE is one of your explicit US K-12 signals — read its framing (guardrails + literacy first) against the HKIS responsible-use and academic-integrity work you’re shaping for Alan.
+        - generic [ref=e122]:
+          - button "Follow \"NYC Department of Education to release its AI playbook this month\"" [ref=e123] [cursor=pointer]:
+            - generic [ref=e124]: ☆
+            - text: Follow
+          - button "Mark unread \"NYC Department of Education to release its AI playbook this month\"" [pressed] [ref=e125] [cursor=pointer]:
+            - generic [ref=e126]: ✓
+            - text: Read
+      - generic [ref=e127]:
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - generic [ref=e130]: Apple/WWDC
+            - generic [ref=e131]: ★ Following
+          - generic [ref=e132]:
+            - 'link "WWDC keynote Mon June 8: iOS 27 turns Siri into a full chatbot, partly powered by Gemini" [ref=e133] [cursor=pointer]':
+              - /url: https://9to5mac.com/2026/05/27/how-to-watch-apples-wwdc-keynote-ios-27-new-siri-and-more/
+            - generic [ref=e134]: · 9to5Mac
+          - generic [ref=e135]: At Monday’s keynote Apple is expected to relaunch Siri as a conversational assistant — a dedicated app, user-selectable models (reportedly including Gemini), and on-device Foundation Models for private tasks.
+          - generic [ref=e136]:
+            - generic [ref=e137]: "→ so what:"
+            - text: the make-or-break Siri overhaul you’ve been tracking — a dedicated Siri app, model choice (ChatGPT/Claude/Gemini), and on-device Foundation Models all bear on classroom iPad workflows and your Barriers / Task Clock apps.
+        - generic [ref=e138]:
+          - 'button "Stop following \"WWDC keynote Mon June 8: iOS 27 turns Siri into a full chatbot, partly powered by Gemini\"" [pressed] [ref=e139] [cursor=pointer]':
+            - generic [ref=e140]: ★
+            - text: Following
+          - 'button "Mark read \"WWDC keynote Mon June 8: iOS 27 turns Siri into a full chatbot, partly powered by Gemini\"" [ref=e141] [cursor=pointer]':
+            - generic [ref=e142]: ○
+            - text: Mark read
+      - generic [ref=e143]:
+        - generic [ref=e144]:
+          - generic [ref=e146]: Hong Kong
+          - generic [ref=e147]:
+            - link "EDB’s Blueprint for Digital Education due in 2026 — AI-literacy framework + HK$500k per school" [ref=e148] [cursor=pointer]:
+              - /url: https://www.info.gov.hk/gia/general/202512/16/P2025121600261.htm
+            - generic [ref=e149]: · HKSAR Govt
+          - generic [ref=e150]: Hong Kong’s Education Bureau will publish a Blueprint for Digital Education in 2026, pairing a new AI-literacy framework with up to HK$500k per school in funding under the wider QEF push.
+          - generic [ref=e151]:
+            - generic [ref=e152]: "→ so what:"
+            - text: the HK$2bn QEF push and the new AI-literacy framework set the local backdrop HKIS sits beside — watch the information-literacy timeline against the 2027–28 Teacher Practising Certificate thread.
+        - generic [ref=e153]:
+          - button "Follow \"EDB’s Blueprint for Digital Education due in 2026 — AI-literacy framework + HK$500k per school\"" [ref=e154] [cursor=pointer]:
+            - generic [ref=e155]: ☆
+            - text: Follow
+          - button "Mark read \"EDB’s Blueprint for Digital Education due in 2026 — AI-literacy framework + HK$500k per school\"" [ref=e156] [cursor=pointer]:
+            - generic [ref=e157]: ○
+            - text: Mark read
+      - generic [ref=e158]:
+        - generic [ref=e159]:
+          - generic [ref=e161]: Research
+          - generic [ref=e162]:
+            - link "New paper separates AI “performance gains” from actual learning" [ref=e163] [cursor=pointer]:
+              - /url: https://arxiv.org/html/2605.13731v1
+            - generic [ref=e164]: · arXiv
+          - generic [ref=e165]: A new preprint argues AI tools can inflate task performance while leaving underlying learning unchanged, and proposes ways to measure the two separately in classroom studies.
+          - generic [ref=e166]:
+            - generic [ref=e167]: "→ so what:"
+            - text: this performance-vs-learning split is the core of your Performance Illusion thesis — flag for the lit review and ask whether the HKIS UDL rollout measures transfer, not task completion.
+        - generic [ref=e168]:
+          - button "Follow \"New paper separates AI “performance gains” from actual learning\"" [ref=e169] [cursor=pointer]:
+            - generic [ref=e170]: ☆
+            - text: Follow
+          - button "Mark read \"New paper separates AI “performance gains” from actual learning\"" [ref=e171] [cursor=pointer]:
+            - generic [ref=e172]: ○
+            - text: Mark read
+      - generic [ref=e173]:
+        - generic [ref=e174]:
+          - generic [ref=e176]: Research
+          - generic [ref=e177]:
+            - 'link "The cognitive-offloading paradox: freed working memory doesn’t guarantee deeper engagement" [ref=e178] [cursor=pointer]':
+              - /url: https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2026.1781101/full
+            - generic [ref=e179]: · Frontiers in Psychology
+          - generic [ref=e180]: A Frontiers in Psychology study finds offloading work to AI frees working memory but doesn’t automatically produce deeper engagement — the freed capacity only helps under certain task designs.
+          - generic [ref=e181]:
+            - generic [ref=e182]: "→ so what:"
+            - text: addresses the “when does offloading help vs harm” gap — a clean framing for parent-facing comms and the responsible-use onboarding.
+        - generic [ref=e183]:
+          - 'button "Follow \"The cognitive-offloading paradox: freed working memory doesn’t guarantee deeper engagement\"" [ref=e184] [cursor=pointer]':
+            - generic [ref=e185]: ☆
+            - text: Follow
+          - 'button "Mark read \"The cognitive-offloading paradox: freed working memory doesn’t guarantee deeper engagement\"" [ref=e186] [cursor=pointer]':
+            - generic [ref=e187]: ○
+            - text: Mark read
+      - group [ref=e188]:
+        - generic "⤴ Export reading state — 1 following · 1 read" [ref=e189] [cursor=pointer]

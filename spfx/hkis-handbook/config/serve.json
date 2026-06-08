@@ -1,0 +1,39 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/spfx-serve.schema.json",
+  "port": 4321,
+  "https": true,
+  "initialPage": "https://hkis.sharepoint.com/sites/Curriculum/SitePages/Home1.aspx",
+  "serveConfigurations": {
+    "default": {
+      "pageUrl": "https://hkis.sharepoint.com/sites/Curriculum/SitePages/Home1.aspx",
+      "customActions": {
+        "b5e5ec29-d941-4867-b37e-d035f0d3c7e0": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {}
+        },
+        "831afe5f-a03c-4753-b219-5bdc737ed7a4": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {}
+        }
+      }
+    },
+    "handbookExperience": {
+      "pageUrl": "https://hkis.sharepoint.com/sites/Curriculum/SitePages/Home1.aspx",
+      "customActions": {
+        "b5e5ec29-d941-4867-b37e-d035f0d3c7e0": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {}
+        }
+      }
+    },
+    "glossaryTooltips": {
+      "pageUrl": "https://hkis.sharepoint.com/sites/Curriculum/SitePages/Home1.aspx",
+      "customActions": {
+        "831afe5f-a03c-4753-b219-5bdc737ed7a4": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {}
+        }
+      }
+    }
+  }
+}

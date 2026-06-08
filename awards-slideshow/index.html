@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Awards Slideshow</title>
+<style>
+  :root {
+    --bg: #002a42;
+    --panel: rgba(255, 255, 255, 0.06);
+    --text: #ffffff;
+    --muted: rgba(255, 255, 255, 0.65);
+    --border: rgba(255, 255, 255, 0.18);
+    --accent: #c00;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+  }
+
+  /* ---------- Setup screen ---------- */
+  #setup { padding: 40px; max-width: 900px; margin: 0 auto; height: 100%; overflow: auto; }
+  #setup h1 { margin: 0 0 8px; font-size: 32px; }
+  #setup .hint { color: var(--muted); font-size: 14px; line-height: 1.6; }
+  #setup code { background: var(--panel); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  #fileInput { margin: 24px 0 12px; color: var(--text); }
+  #preview { max-height: 320px; overflow: auto; border: 1px solid var(--border); border-radius: 6px; margin: 16px 0 24px; display: none; background: var(--panel); }
+  #preview table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  #preview th, #preview td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  #preview th { background: #1a1a1a; font-weight: 600; position: sticky; top: 0; }
+  #preview .count { padding: 8px 12px; color: var(--muted); font-size: 12px; }
+  button { background: var(--accent); color: white; border: 0; padding: 12px 28px; font-size: 16px; cursor: pointer; border-radius: 4px; font-weight: 600; }
+  button:disabled { background: #333; color: #777; cursor: not-allowed; }
+  button.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); font-weight: 400; padding: 8px 16px; font-size: 14px; }
+  .keys { margin-top: 32px; color: var(--muted); font-size: 13px; }
+  .keys kbd { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 2px 6px; font-family: ui-monospace, monospace; font-size: 12px; }
+
+  /* ---------- Slide screen ---------- */
+  #slide {
+    display: none;
+    height: 100%;
+    padding: 60px 80px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+  }
+  #slide.active { display: flex; }
+  .award-title { font-size: clamp(36px, 6vw, 84px); font-weight: 700; margin: 0 0 24px; line-height: 1.1; }
+  .award-desc { font-size: clamp(18px, 2vw, 28px); color: var(--muted); max-width: 1100px; margin: 0 0 40px; line-height: 1.4; }
+  .winners-prompt { font-size: 22px; color: var(--muted); margin-top: 40px; font-style: italic; }
+  .winners { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin-top: 30px; }
+  .winner { display: flex; flex-direction: column; align-items: center; opacity: 0; transform: translateY(8px); animation: fadeIn 400ms ease forwards; }
+  .winner img, .winner .placeholder {
+    width: 200px; height: 240px; object-fit: cover; border-radius: 8px; background: #1a1a1a;
+    display: block;
+  }
+  .winner .placeholder { display: flex; align-items: center; justify-content: center; color: #555; font-size: 12px; }
+  .winner .name { font-size: 22px; margin-top: 14px; font-weight: 600; }
+  @keyframes fadeIn { to { opacity: 1; transform: none; } }
+
+  /* ---------- End screen ---------- */
+  #end { display: none; height: 100%; flex-direction: column; justify-content: center; align-items: center; gap: 24px; }
+  #end.active { display: flex; }
+  #end h1 { font-size: 48px; margin: 0; }
+
+  /* ---------- Footer hint ---------- */
+  #hint { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); color: var(--muted); font-size: 12px; opacity: 0.5; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div id="setup">
+  <h1>Awards Slideshow</h1>
+  <p class="hint">
+    Load a CSV with columns:
+    <code>Award</code>,
+    <code>Description</code>,
+    <code>WinnerNames</code>,
+    <code>WinnerIDs</code>,
+    <code>HideWinners</code>.
+    <br>
+    <code>WinnerNames</code> and <code>WinnerIDs</code> are semicolon-separated and matched by position
+    (e.g. <code>Alice Wong; Bob Chen</code> and <code>240830; 240831</code>).
+    <code>HideWinners</code> is <code>true</code> (surprise — winners hidden until reveal) or <code>false</code>.
+  </p>
+
+  <input type="file" id="fileInput" accept=".csv,text/csv">
+  <div id="preview"></div>
+  <button id="startBtn" disabled>Start slideshow</button>
+
+  <p class="keys">
+    During the show:
+    <kbd>Space</kbd> or <kbd>→</kbd> next/reveal ·
+    <kbd>←</kbd> back ·
+    <kbd>F</kbd> fullscreen ·
+    <kbd>Esc</kbd> exit fullscreen
+  </p>
+</div>
+
+<div id="slide">
+  <h2 class="award-title"></h2>
+  <p class="award-desc"></p>
+  <div class="winners-prompt"></div>
+  <div class="winners"></div>
+</div>
+
+<div id="end">
+  <h1>End of awards</h1>
+  <div style="display: flex; gap: 12px;">
+    <button id="restartBtn">Start over</button>
+    <button class="ghost" id="loadAnotherBtn">Load a different CSV</button>
+  </div>
+</div>
+
+<div id="hint"></div>
+
+<script>
+  // ---------- Config ----------
+
+  // Student photo URL pattern. Replace with whatever the school directory exposes.
+  const PHOTO_URL = id => `https://webapp5.hkis.edu.hk/img/main.php/${encodeURIComponent(String(id).trim())}`;
+
+  // How many slides ahead to prefetch.
+  const PREFETCH_AHEAD = 2;
+
+  // ---------- Data layer ----------
+  // loadAwards() returns Promise<Award[]>. For the prototype it reads a CSV file
+  // chosen by the user. To move to SharePoint later, replace this function with
+  // one that calls /_api/web/lists/getByTitle('Awards')/items?$select=...&$expand=Winners
+  // and maps the People field into the { name, id, photoUrl } shape used below.
+
+  /**
+   * @typedef {Object} Winner
+   * @property {string} name
+   * @property {string|null} id
+   * @property {string|null} photoUrl
+   *
+   * @typedef {Object} Award
+   * @property {number} index
+   * @property {string} award
+   * @property {string} description
+   * @property {Winner[]} winners
+   * @property {boolean} hideWinners
+   */
+
+  function loadAwardsFromCSVFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => {
+        try {
+          const objects = csvToObjects(String(reader.result));
+          resolve(normalizeAwards(objects));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  // ---------- Minimal CSV parser (handles quoted fields, embedded commas, escaped quotes) ----------
+
+  function parseCSV(text) {
+    const rows = [];
+    let row = [];
+    let cell = '';
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { cell += '"'; i++; }
+          else inQuotes = false;
+        } else cell += c;
+      } else {
+        if (c === '"') inQuotes = true;
+        else if (c === ',') { row.push(cell); cell = ''; }
+        else if (c === '\n' || c === '\r') {
+          if (c === '\r' && text[i + 1] === '\n') i++;
+          row.push(cell); cell = '';
+          if (row.length > 1 || row[0] !== '') rows.push(row);
+          row = [];
+        } else cell += c;
+      }
+    }
+    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+
+  function csvToObjects(text) {
+    const rows = parseCSV(text);
+    if (!rows.length) return [];
+    const headers = rows[0].map(h => h.trim());
+    return rows.slice(1).map(r => {
+      const o = {};
+      headers.forEach((h, i) => { o[h] = r[i] !== undefined ? r[i] : ''; });
+      return o;
+    });
+  }
+
+  function normalizeAwards(rows) {
+    return rows.map((r, i) => {
+      const names = (r.WinnerNames || '').split(';').map(s => s.trim()).filter(Boolean);
+      const ids = (r.WinnerIDs || '').split(';').map(s => s.trim()).filter(Boolean);
+      const winners = names.map((name, j) => ({
+        name,
+        id: ids[j] || null,
+        photoUrl: ids[j] ? PHOTO_URL(ids[j]) : null
+      }));
+      const hideRaw = String(r.HideWinners || '').trim().toLowerCase();
+      return {
+        index: i,
+        award: (r.Award || '').trim(),
+        description: (r.Description || '').trim(),
+        winners,
+        hideWinners: hideRaw === 'true' || hideRaw === '1' || hideRaw === 'yes' || hideRaw === 'y'
+      };
+    }).filter(a => a.award);
+  }
+
+  // ---------- DOM helpers ----------
+
+  const $ = sel => document.querySelector(sel);
+  const fileInput = $('#fileInput');
+  const startBtn = $('#startBtn');
+  const previewEl = $('#preview');
+  const setupEl = $('#setup');
+  const slideEl = $('#slide');
+  const endEl = $('#end');
+  const hintEl = $('#hint');
+
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // ---------- State ----------
+
+  /** @type {Award[]} */
+  let awards = [];
+  let slideIdx = 0;
+  let revealed = false;
+  const prefetched = new Set();
+  // Stack of {slideIdx, revealed} snapshots taken before each forward step.
+  // Each press of ← pops one entry, so back/forward are exactly symmetric.
+  const history = [];
+
+  // ---------- Setup wiring ----------
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    loadAwardsFromCSVFile(file)
+      .then(parsed => {
+        awards = parsed;
+        renderPreview(awards);
+        startBtn.disabled = awards.length === 0;
+      })
+      .catch(err => {
+        alert('Failed to parse CSV: ' + (err && err.message || err));
+      });
+  });
+
+  function renderPreview(list) {
+    if (!list.length) { previewEl.style.display = 'none'; return; }
+    previewEl.style.display = 'block';
+    const rowsHtml = list.map(a => `
+      <tr>
+        <td>${escapeHTML(a.award)}</td>
+        <td>${escapeHTML(a.description.length > 80 ? a.description.slice(0, 80) + '…' : a.description)}</td>
+        <td>${a.winners.length ? a.winners.map(w => escapeHTML(w.name)).join(', ') : '<span style="color:#555;">—</span>'}</td>
+        <td style="color: ${a.hideWinners ? '#c0a000' : '#7a9'}">${a.hideWinners ? 'surprise' : 'visible'}</td>
+      </tr>
+    `).join('');
+    previewEl.innerHTML = `
+      <table>
+        <thead><tr><th>Award</th><th>Description</th><th>Winners</th><th>Mode</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <div class="count">${list.length} award${list.length === 1 ? '' : 's'} loaded.</div>
+    `;
+  }
+
+  // ---------- Slideshow ----------
+
+  startBtn.addEventListener('click', () => {
+    if (!awards.length) return;
+    slideIdx = 0;
+    revealed = false;
+    history.length = 0;
+    setupEl.style.display = 'none';
+    slideEl.classList.add('active');
+    showSlide();
+    document.documentElement.requestFullscreen?.().catch(() => {});
+  });
+
+  function showSlide() {
+    const a = awards[slideIdx];
+    slideEl.querySelector('.award-title').textContent = a.award;
+    slideEl.querySelector('.award-desc').textContent = a.description;
+
+    const winnersEl = slideEl.querySelector('.winners');
+    const promptEl = slideEl.querySelector('.winners-prompt');
+
+    const shouldShowWinners = !a.hideWinners || revealed;
+
+    if (shouldShowWinners && a.winners.length) {
+      winnersEl.innerHTML = a.winners.map(w => `
+        <div class="winner">
+          ${w.photoUrl
+            ? `<img src="${escapeHTML(w.photoUrl)}" alt="${escapeHTML(w.name)}" onerror="this.outerHTML='<div class=&quot;placeholder&quot;>no photo</div>'">`
+            : `<div class="placeholder">no photo</div>`}
+          <div class="name">${escapeHTML(w.name)}</div>
+        </div>
+      `).join('');
+      promptEl.style.display = 'none';
+      winnersEl.style.display = 'flex';
+    } else if (a.hideWinners && !revealed) {
+      winnersEl.innerHTML = '';
+      winnersEl.style.display = 'none';
+      promptEl.textContent = 'Press Space to reveal winner' + (a.winners.length > 1 ? 's' : '');
+      promptEl.style.display = 'block';
+    } else {
+      winnersEl.innerHTML = '';
+      winnersEl.style.display = 'none';
+      promptEl.style.display = 'none';
+    }
+
+    hintEl.textContent = `${slideIdx + 1} / ${awards.length}`;
+    prefetchNext();
+  }
+
+  function prefetchNext() {
+    for (let off = 1; off <= PREFETCH_AHEAD; off++) {
+      const next = awards[slideIdx + off];
+      if (!next) break;
+      next.winners.forEach(w => {
+        if (!w.photoUrl || prefetched.has(w.photoUrl)) return;
+        prefetched.add(w.photoUrl);
+        const img = new Image();
+        img.src = w.photoUrl;
+      });
+    }
+  }
+
+  function advance() {
+    const a = awards[slideIdx];
+    const snapshot = { slideIdx, revealed };
+    if (a.hideWinners && !revealed) {
+      history.push(snapshot);
+      revealed = true;
+      showSlide();
+      return;
+    }
+    if (slideIdx + 1 >= awards.length) {
+      endShow();
+      return;
+    }
+    history.push(snapshot);
+    slideIdx++;
+    revealed = false;
+    showSlide();
+  }
+
+  function goBack() {
+    const prev = history.pop();
+    if (!prev) return;
+    slideIdx = prev.slideIdx;
+    revealed = prev.revealed;
+    showSlide();
+  }
+
+  function endShow() {
+    slideEl.classList.remove('active');
+    endEl.classList.add('active');
+    hintEl.textContent = '';
+  }
+
+  // ---------- Input ----------
+
+  document.addEventListener('keydown', (e) => {
+    if (!slideEl.classList.contains('active')) return;
+    if (e.key === ' ' || e.key === 'ArrowRight' || e.key === 'Enter' || e.key === 'PageDown') {
+      e.preventDefault();
+      advance();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      goBack();
+    } else if (e.key === 'f' || e.key === 'F') {
+      e.preventDefault();
+      if (document.fullscreenElement) document.exitFullscreen?.();
+      else document.documentElement.requestFullscreen?.();
+    }
+  });
+
+  // Click anywhere on the slide also advances (for presenter remotes that emulate clicks, or touch).
+  slideEl.addEventListener('click', advance);
+
+  // ---------- End-of-show buttons ----------
+
+  $('#restartBtn').addEventListener('click', () => {
+    slideIdx = 0;
+    revealed = false;
+    history.length = 0;
+    endEl.classList.remove('active');
+    slideEl.classList.add('active');
+    showSlide();
+  });
+
+  $('#loadAnotherBtn').addEventListener('click', () => {
+    awards = [];
+    slideIdx = 0;
+    revealed = false;
+    history.length = 0;
+    prefetched.clear();
+    fileInput.value = '';
+    previewEl.style.display = 'none';
+    previewEl.innerHTML = '';
+    startBtn.disabled = true;
+    endEl.classList.remove('active');
+    slideEl.classList.remove('active');
+    setupEl.style.display = '';
+    hintEl.textContent = '';
+    if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+  });
+</script>
+
+</body>
+</html>

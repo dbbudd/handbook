@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pnp:Provisioning xmlns:pnp="http://schemas.dev.office.com/PnP/2022/09/ProvisioningSchema"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://schemas.dev.office.com/PnP/2022/09/ProvisioningSchema https://raw.githubusercontent.com/pnp/PnP-Provisioning-Schema/master/ProvisioningSchema-2022-09-FullSchema.xsd">
+
+  <pnp:Preferences Generator="handbook-site-template" Version="0.1.0" />
+
+  <pnp:Templates ID="HANDBOOK-TEMPLATES">
+    <pnp:ProvisioningTemplate ID="HANDBOOK-MAIN" Version="0.1" BaseSiteTemplate="GROUP#0">
+
+      <pnp:Properties>
+        <pnp:Property Key="HandbookVersion" Value="0.1.0" />
+      </pnp:Properties>
+
+      <pnp:SitePolicy>HBL Communication Site Policy</pnp:SitePolicy>
+
+      <pnp:RegionalSettings TimeZone="76" LocaleId="3081" Time24="true" />
+
+      <pnp:Navigation>
+        <pnp:GlobalNavigation NavigationType="Structural">
+          <pnp:StructuralNavigation RemoveExistingNodes="true">
+            <pnp:NavigationNode Title="Home" Url="{site}" />
+          </pnp:StructuralNavigation>
+        </pnp:GlobalNavigation>
+      </pnp:Navigation>
+
+      <pnp:Files>
+        <!-- Static assets uploaded into the SiteAssets library on provisioning -->
+        <!-- Example: <pnp:File Src="assets/logo.png" Folder="SiteAssets" Overwrite="true" /> -->
+      </pnp:Files>
+
+      <pnp:ClientSidePages>
+        <!-- Modern pages live here. See pages/ for individual page definitions you can include later. -->
+      </pnp:ClientSidePages>
+
+    </pnp:ProvisioningTemplate>
+  </pnp:Templates>
+
+</pnp:Provisioning>

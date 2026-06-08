@@ -1,0 +1,1912 @@
+/*
+ * HandbookExperience styles
+ *
+ * Ported from index.html (the prototype). Everything is wrapped in `:global` so
+ * the class names stay as-written and can be matched against DOM we inject as
+ * well as content that arrives from the prototype's HTML.
+ *
+ * Scoping: these styles only load on Home1.aspx (the customizer's URL guard).
+ * For extra safety against bleeding to other SP UI, body-level rules are
+ * nested under `.hb-active` (which the customizer adds to <html>).
+ *
+ * The AI Assistant CSS from the prototype is intentionally removed — we use
+ * SharePoint Agents instead.
+ */
+
+:global {
+  /* ===== CSS CUSTOM PROPERTIES ===== */
+  :root {
+    --red: #aa272f;
+    --dark-blue: #002a42;
+    --yellow: #ffcd00;
+    --blue: #14509e;
+    --light-gray: #eeeeee;
+    --dark-gray: #d9d9d9;
+    --light-red: #cb5d63;
+    --light-teal: #577899;
+
+    --font-size-base: 1rem;
+    --font-scale: 1;
+    --body-font: 'Libre Franklin', 'Franklin Gothic', 'ITC Franklin Gothic', 'Helvetica Neue', Helvetica, Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --heading-font: var(--body-font);
+
+    --nav-width: 400px;
+    --toolbar-height: 48px;
+    --content-max-width: 820px;
+  }
+
+  /* — Light — */
+  [data-theme="light"] {
+    --bg: #fafafa;
+    --bg-surface: #f8f8f8;
+    --bg-nav: #f0f0f0;
+    --bg-nav-hover: rgba(0,0,0,0.05);
+    --bg-nav-active: rgba(0,42,66,0.1);
+    --text: #1a1a1a;
+    --text-secondary: #555;
+    --text-nav: #444;
+    --text-nav-active: var(--dark-blue);
+    --border: #e0e0e0;
+    --bg-tight: #fdf0f0;
+    --border-tight: var(--red);
+    --bg-guidance: #eff6ff;
+    --border-guidance: var(--blue);
+    --bg-example: #fefce8;
+    --border-example: var(--yellow);
+    --bg-toolbar: var(--dark-blue);
+    --border-toolbar: var(--dark-blue);
+    --dfn-bg: rgba(87,120,153,0.1);
+    --dfn-border: var(--light-teal);
+    --popover-bg: var(--dark-blue);
+    --popover-text: #fff;
+  }
+  /* — Sepia — */
+  [data-theme="sepia"] {
+    --bg: #f5edd6;
+    --bg-surface: #ede4cb;
+    --bg-nav: #e8dfca;
+    --bg-nav-hover: rgba(62,47,28,0.08);
+    --bg-nav-active: rgba(62,47,28,0.15);
+    --text: #3e2f1c;
+    --text-secondary: #6b5b45;
+    --text-nav: #5a4a34;
+    --text-nav-active: #3e2f1c;
+    --border: #d4c6a8;
+    --bg-tight: #f0ddc0;
+    --border-tight: #a04040;
+    --bg-guidance: #e8dcc0;
+    --border-guidance: #6b7d5e;
+    --bg-example: #f0e4c0;
+    --border-example: #b89a40;
+    --bg-toolbar: #3e2f1c;
+    --border-toolbar: #3e2f1c;
+    --dfn-bg: rgba(107,91,69,0.12);
+    --dfn-border: #8a7350;
+    --popover-bg: #3e2f1c;
+    --popover-text: #f5edd6;
+  }
+  /* — Dark — */
+  [data-theme="dark"] {
+    --bg: #121212;
+    --bg-surface: #1e1e1e;
+    --bg-nav: #1a1a1a;
+    --bg-nav-hover: rgba(255,255,255,0.06);
+    --bg-nav-active: rgba(255,255,255,0.12);
+    --text: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --text-nav: #a0a0a0;
+    --text-nav-active: #fff;
+    --border: #333;
+    --bg-tight: rgba(170,39,47,0.12);
+    --border-tight: var(--light-red);
+    --bg-guidance: rgba(20,80,158,0.12);
+    --border-guidance: var(--light-teal);
+    --bg-example: rgba(255,205,0,0.08);
+    --border-example: #b8940a;
+    --bg-toolbar: #0a1a28;
+    --border-toolbar: #0a1a28;
+    --dfn-bg: rgba(87,120,153,0.15);
+    --dfn-border: var(--light-teal);
+    --popover-bg: #2a3a4a;
+    --popover-text: #e0e0e0;
+  }
+
+  /* ===== Handbook page scope ===== */
+  .hb-active {
+    /* ===== BASE ===== */
+    body {
+      font-family: var(--body-font);
+      font-size: var(--font-size-base);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      transition: background 0.25s, color 0.25s;
+    }
+
+    /* ===== FONT FAMILY ENFORCEMENT =====
+       Force Libre Franklin on every text-bearing element so SP / Fluent UI
+       defaults (Segoe UI) don't bleed through via inheritance. Code and icon
+       fonts deliberately preserved. */
+    body,
+    p, span, div, a, li, dl, dt, dd, blockquote,
+    h1, h2, h3, h4, h5, h6,
+    button, input, textarea, select, label,
+    table, th, td, caption,
+    figure, figcaption, summary, details,
+    em, i, strong, b, small, sub, sup, mark, q, cite, abbr {
+      font-family: var(--body-font) !important;
+    }
+    /* Preserve monospace for code */
+    code, pre, kbd, samp, tt,
+    code *, pre * {
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, "Cascadia Mono", Consolas, monospace !important;
+    }
+    /* Theme-aware styling for SP's Monospaced format.
+       SP wraps short monospaced selections in <code> (inline) and longer
+       blocks in <pre> (block). Both use a stronger contrast bg + teal
+       left-border accent so they read as distinct from body text on
+       every theme (the default --bg-surface was too close to --bg in light). */
+    [data-automation-id="textBox"] code,
+    .ck-content code {
+      background: rgba(0, 0, 0, 0.06) !important;
+      color: var(--text) !important;
+      padding: 0.1em 0.4em !important;
+      border-radius: 3px !important;
+      border: 1px solid var(--border) !important;
+      font-size: 0.92em !important;
+    }
+    [data-automation-id="textBox"] pre,
+    .ck-content pre {
+      display: block !important;
+      padding: 0.75rem 1rem !important;
+      background: rgba(0, 0, 0, 0.05) !important;
+      color: var(--text) !important;
+      border: 1px solid var(--border) !important;
+      border-left: 3px solid var(--light-teal) !important;
+      border-radius: 4px !important;
+      margin: 1rem 0 !important;
+      overflow-x: auto !important;
+      font-size: 0.92em !important;
+      line-height: 1.5 !important;
+    }
+    [data-automation-id="textBox"] pre code,
+    .ck-content pre code {
+      background: transparent !important;
+      border: 0 !important;
+      padding: 0 !important;
+    }
+    /* Dark theme: invert the subtle tint so it lifts off the dark bg */
+    [data-theme="dark"].hb-active [data-automation-id="textBox"] code,
+    [data-theme="dark"].hb-active .ck-content code {
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
+    [data-theme="dark"].hb-active [data-automation-id="textBox"] pre,
+    [data-theme="dark"].hb-active .ck-content pre {
+      background: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* ===== EXTERNAL-LINK BUTTON CARDS =====
+       Repurposing SP's "Monospaced" format on a hyperlink as an external-link
+       button card (prototype's .btn-external style). Editor workflow:
+         1. Type text (e.g. "📖 Lower Primary Faculty Handbook")
+         2. Format selection as a link (paste URL)
+         3. With link still selected, apply Monospaced
+       SP wraps Monospaced text in <pre> (block) or <code> (inline). When the
+       Monospaced span contains a link, we override the code/pre styling and
+       render the wrapper as a button card. */
+
+    /* <pre> containing a link → button card (this is the common case in SP) */
+    [data-automation-id="textBox"] pre:has(a[href]),
+    .ck-content pre:has(a[href]) {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.75rem !important;
+      padding: 0.85rem 1.25rem !important;
+      margin: 0.75rem 0 1.5rem !important;
+      border: 1.5px solid var(--border) !important;
+      border-left: 1.5px solid var(--border) !important;
+      border-radius: 10px !important;
+      background: var(--bg-surface) !important;
+      color: var(--text) !important;
+      font-family: var(--body-font) !important;
+      font-size: 1rem !important;
+      font-weight: 400 !important;
+      line-height: 1.4 !important;
+      white-space: normal !important;
+      transition: background 0.15s, border-color 0.15s !important;
+      text-decoration: none !important;
+    }
+    [data-automation-id="textBox"] pre:has(a[href]):hover,
+    .ck-content pre:has(a[href]):hover {
+      background: var(--dark-gray) !important;
+      border-color: var(--dark-blue) !important;
+    }
+    [data-automation-id="textBox"] pre:has(a[href]) a,
+    [data-automation-id="textBox"] pre:has(a[href]) a *,
+    [data-automation-id="textBox"] pre:has(a[href]) span,
+    .ck-content pre:has(a[href]) a,
+    .ck-content pre:has(a[href]) a *,
+    .ck-content pre:has(a[href]) span {
+      text-decoration: none !important;
+      font-family: var(--body-font) !important;
+      color: var(--dark-blue) !important;
+      font-weight: 600 !important;
+      font-size: 0.95rem !important;
+      background: transparent !important;
+      border: 0 !important;
+      padding: 0 !important;
+    }
+    [data-automation-id="textBox"] pre:has(a[href]) a,
+    .ck-content pre:has(a[href]) a {
+      flex: 1 !important;
+    }
+    [data-automation-id="textBox"] pre:has(a[href])::after,
+    .ck-content pre:has(a[href])::after {
+      content: '↗' !important;
+      font-size: 1.1rem !important;
+      color: var(--text-secondary) !important;
+      flex-shrink: 0 !important;
+      margin-left: auto !important;
+    }
+    /* Dark / sepia overrides for <pre>-based button card */
+    [data-theme="dark"].hb-active [data-automation-id="textBox"] pre:has(a[href]) a,
+    [data-theme="dark"].hb-active [data-automation-id="textBox"] pre:has(a[href]) a *,
+    [data-theme="dark"].hb-active .ck-content pre:has(a[href]) a,
+    [data-theme="dark"].hb-active .ck-content pre:has(a[href]) a * {
+      color: var(--yellow) !important;
+    }
+    [data-theme="sepia"].hb-active [data-automation-id="textBox"] pre:has(a[href]) a,
+    [data-theme="sepia"].hb-active [data-automation-id="textBox"] pre:has(a[href]) a *,
+    [data-theme="sepia"].hb-active .ck-content pre:has(a[href]) a,
+    [data-theme="sepia"].hb-active .ck-content pre:has(a[href]) a * {
+      color: #5a3e1b !important;
+    }
+    [data-theme="dark"].hb-active [data-automation-id="textBox"] pre:has(a[href]):hover,
+    [data-theme="dark"].hb-active .ck-content pre:has(a[href]):hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: var(--light-teal) !important;
+    }
+
+    /* ===== Inline <code> + link variants (also handled, less common) ===== */
+    [data-automation-id="textBox"] code:has(a[href]),
+    .ck-content code:has(a[href]) {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.75rem !important;
+      padding: 0.85rem 1.25rem !important;
+      margin: 0.75rem 0 1.5rem !important;
+      border: 1.5px solid var(--border) !important;
+      border-radius: 10px !important;
+      background: var(--bg-surface) !important;
+      color: var(--text) !important;
+      font-family: var(--body-font) !important;
+      font-size: 1rem !important;
+      font-weight: 400 !important;
+      line-height: 1.4 !important;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s !important;
+      text-decoration: none !important;
+    }
+    [data-automation-id="textBox"] code:has(a[href]):hover,
+    .ck-content code:has(a[href]):hover {
+      background: var(--dark-gray) !important;
+      border-color: var(--dark-blue) !important;
+    }
+    /* Inside-the-card text — override SP/Griffel underline + monospace at
+       every descendant level, not just direct child. */
+    [data-automation-id="textBox"] code:has(a[href]) a,
+    [data-automation-id="textBox"] code:has(a[href]) a *,
+    [data-automation-id="textBox"] code:has(a[href]) span,
+    .ck-content code:has(a[href]) a,
+    .ck-content code:has(a[href]) a *,
+    .ck-content code:has(a[href]) span {
+      text-decoration: none !important;
+      font-family: var(--body-font) !important;
+      color: var(--dark-blue) !important;
+      font-weight: 600 !important;
+      font-size: 0.95rem !important;
+      background: transparent !important;
+      border: 0 !important;
+    }
+    [data-automation-id="textBox"] code:has(a[href]) a,
+    .ck-content code:has(a[href]) a {
+      flex: 1 !important;
+    }
+    [data-automation-id="textBox"] code:has(a[href])::after,
+    .ck-content code:has(a[href])::after {
+      content: '↗' !important;
+      font-size: 1.1rem !important;
+      color: var(--text-secondary) !important;
+      flex-shrink: 0 !important;
+      margin-left: auto !important;
+    }
+
+    /* Inverse ordering: <a href>...<code>...</code>...</a> */
+    [data-automation-id="textBox"] a[href]:has(> code),
+    .ck-content a[href]:has(> code) {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.75rem !important;
+      padding: 0.85rem 1.25rem !important;
+      margin: 0.75rem 0 1.5rem !important;
+      border: 1.5px solid var(--border) !important;
+      border-radius: 10px !important;
+      background: var(--bg-surface) !important;
+      color: var(--dark-blue) !important;
+      font-family: var(--body-font) !important;
+      font-size: 0.95rem !important;
+      font-weight: 600 !important;
+      line-height: 1.4 !important;
+      text-decoration: none !important;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s !important;
+    }
+    [data-automation-id="textBox"] a[href]:has(> code):hover,
+    .ck-content a[href]:has(> code):hover {
+      background: var(--dark-gray) !important;
+      border-color: var(--dark-blue) !important;
+      text-decoration: none !important;
+    }
+    [data-automation-id="textBox"] a[href]:has(code) code,
+    [data-automation-id="textBox"] a[href]:has(code) code *,
+    [data-automation-id="textBox"] a[href]:has(code) span,
+    .ck-content a[href]:has(code) code,
+    .ck-content a[href]:has(code) code *,
+    .ck-content a[href]:has(code) span {
+      background: transparent !important;
+      border: 0 !important;
+      padding: 0 !important;
+      color: inherit !important;
+      font-family: var(--body-font) !important;
+      font-size: inherit !important;
+      text-decoration: none !important;
+      flex: 1 !important;
+    }
+    [data-automation-id="textBox"] a[href]:has(> code)::after,
+    .ck-content a[href]:has(> code)::after {
+      content: '↗' !important;
+      font-size: 1.1rem !important;
+      color: var(--text-secondary) !important;
+      flex-shrink: 0 !important;
+      margin-left: auto !important;
+    }
+
+    /* Theme overrides for the button card title color */
+    [data-theme="dark"].hb-active [data-automation-id="textBox"] code:has(a[href]) > a,
+    [data-theme="dark"].hb-active .ck-content code:has(a[href]) > a,
+    [data-theme="dark"].hb-active [data-automation-id="textBox"] a[href]:has(> code),
+    [data-theme="dark"].hb-active .ck-content a[href]:has(> code) {
+      color: var(--yellow) !important;
+    }
+    [data-theme="sepia"].hb-active [data-automation-id="textBox"] code:has(a[href]) > a,
+    [data-theme="sepia"].hb-active .ck-content code:has(a[href]) > a,
+    [data-theme="sepia"].hb-active [data-automation-id="textBox"] a[href]:has(> code),
+    [data-theme="sepia"].hb-active .ck-content a[href]:has(> code) {
+      color: #5a3e1b !important;
+    }
+    [data-theme="dark"].hb-active [data-automation-id="textBox"] code:has(a[href]):hover,
+    [data-theme="dark"].hb-active .ck-content code:has(a[href]):hover,
+    [data-theme="dark"].hb-active [data-automation-id="textBox"] a[href]:has(> code):hover,
+    [data-theme="dark"].hb-active .ck-content a[href]:has(> code):hover {
+      border-color: var(--light-teal) !important;
+      box-shadow: 0 2px 12px rgba(87, 120, 153, 0.2) !important;
+    }
+    /* Preserve icon-font glyphs (Fabric MDL2 / Fluent UI icons) */
+    [class*="ms-Icon"],
+    [class*="ms-Icon"]::before,
+    [class*="ms-Icon"]::after,
+    [class*="MsIcon"],
+    [class*="MDL2"],
+    [data-icon-name],
+    i[class] {
+      font-family: revert !important;
+    }
+    /* Tell Fluent UI v9 components to use Libre Franklin via its base token */
+    --fontFamilyBase: 'Libre Franklin', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+    h1, h2, h3, h4, h5 { font-family: var(--heading-font); line-height: 1.3; color: var(--text); }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    h2 { font-size: 1.55rem; margin-top: 2.5rem; margin-bottom: 0.75rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--border); }
+    h3 { font-size: 1.25rem; margin-top: 2rem; margin-bottom: 0.5rem; color: var(--dark-blue); }
+    h4 { font-size: 1.05rem; margin-top: 1.5rem; margin-bottom: 0.4rem; }
+    p { margin-bottom: 1rem; }
+    ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+    li { margin-bottom: 0.35rem; }
+    strong { font-weight: 600; }
+
+    /* H1 inside SP text web parts = the prototype's red "section banner".
+       Scoped to content areas so we don't accidentally restyle SP's page
+       header H1 (e.g., "Home"). */
+    [data-automation-id="textBox"] h1,
+    .ck-content h1,
+    .rte-webpart h1 {
+      display: block;
+      background: #aa272f !important;
+      color: #fff !important;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      font-size: 1.5rem !important;
+      line-height: 1.3;
+      text-align: center;
+      padding: 1rem 1.5rem !important;
+      margin: 2.5rem 0 1.5rem !important;
+      border-radius: 8px;
+      border-bottom: 0 !important;
+    }
+    @media (max-width: 600px) {
+      [data-automation-id="textBox"] h1,
+      .ck-content h1,
+      .rte-webpart h1 {
+        padding: 0.75rem 1rem !important;
+        font-size: 1.15rem !important;
+        letter-spacing: 0.08em;
+      }
+    }
+
+    /* H2 inside SP text web parts — forced prototype values to defeat any
+       inline `style="border:none;..."` left over from extracted prototype
+       markup and SP's own h2 defaults. */
+    [data-automation-id="textBox"] h2,
+    .ck-content h2,
+    .rte-webpart h2 {
+      font-size: 1.55rem !important;
+      font-weight: 700 !important;
+      margin-top: 2.5rem !important;
+      margin-bottom: 0.75rem !important;
+      padding-bottom: 0.4rem !important;
+      padding-top: 0 !important;
+      border-bottom: 2px solid var(--border) !important;
+      border-top: 0 !important;
+      border-left: 0 !important;
+      border-right: 0 !important;
+      color: var(--dark-blue) !important;
+      background: transparent !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+    }
+
+    /* H3 inside SP text web parts — prototype style */
+    [data-automation-id="textBox"] h3,
+    .ck-content h3,
+    .rte-webpart h3 {
+      font-size: 1.25rem !important;
+      font-weight: 700 !important;
+      margin-top: 2rem !important;
+      margin-bottom: 0.5rem !important;
+      color: var(--dark-blue) !important;
+      border: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+    }
+    /* Note: dark/sepia overrides for content H2/H3 live at top-level
+       (outside .hb-active) below — nesting them here compiles to
+       `.hb-active [data-theme="dark"].hb-active ...` which never matches. */
+
+    /* ===== PULL QUOTE VARIANTS =====
+       SP's modern editor emits <blockquote class="semanticQuote {variant}">
+       where {variant} is one of:
+         quotePlain  → repurposed as the prototype's .lead (subheading)
+         quoteBox    → repurposed as .callout-tight (red, "required")
+         quoteLeft   → repurposed as .callout-guidance (blue, "recommended")
+         quoteIcon   → repurposed as .callout-example (yellow, "example")
+       All four use theme-aware tokens (--bg-tight, --border-tight, etc.)
+       so light / sepia / dark adapt automatically. */
+
+    /* Common reset for every Pull Quote. Use the universal descendant
+       selector and aggressive !important to win against SP's Griffel
+       atomic-CSS rules that apply bold/italic/large-size to inner <p>s. */
+    [data-automation-id="textBox"] blockquote.semanticQuote,
+    [data-automation-id="textBox"] blockquote.semanticQuote *,
+    .ck-content blockquote.semanticQuote,
+    .ck-content blockquote.semanticQuote * {
+      font-style: normal !important;
+      font-weight: 400 !important;
+      font-size: 1rem !important;
+      line-height: 1.6 !important;
+      text-align: left !important;
+      font-family: var(--body-font) !important;
+      color: var(--text) !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      quotes: none !important;
+    }
+    /* Restore inline emphasis where the author actually applied it */
+    [data-automation-id="textBox"] blockquote.semanticQuote em,
+    .ck-content blockquote.semanticQuote em {
+      font-style: italic !important;
+    }
+    [data-automation-id="textBox"] blockquote.semanticQuote strong,
+    [data-automation-id="textBox"] blockquote.semanticQuote b,
+    .ck-content blockquote.semanticQuote strong,
+    .ck-content blockquote.semanticQuote b {
+      font-weight: 600 !important;
+    }
+    [data-automation-id="textBox"] blockquote.semanticQuote::before,
+    [data-automation-id="textBox"] blockquote.semanticQuote::after,
+    .ck-content blockquote.semanticQuote::before,
+    .ck-content blockquote.semanticQuote::after {
+      content: none !important;
+    }
+
+    /* PLAIN → lead/subheading paragraph */
+    [data-automation-id="textBox"] blockquote.quotePlain,
+    .ck-content blockquote.quotePlain {
+      font-size: 1.1rem !important;
+      color: var(--text-secondary) !important;
+      margin: 0.25rem 0 2rem !important;
+      padding: 0 !important;
+      border: 0 !important;
+      background: transparent !important;
+      line-height: 1.6 !important;
+    }
+    [data-automation-id="textBox"] blockquote.quotePlain p,
+    .ck-content blockquote.quotePlain p {
+      font-size: inherit !important;
+      color: inherit !important;
+      line-height: inherit !important;
+      margin: 0 !important;
+    }
+
+    /* Shared callout box style for boxed / left-border / icon variants */
+    [data-automation-id="textBox"] blockquote.quoteBox,
+    [data-automation-id="textBox"] blockquote.quoteLeft,
+    [data-automation-id="textBox"] blockquote.quoteIcon,
+    .ck-content blockquote.quoteBox,
+    .ck-content blockquote.quoteLeft,
+    .ck-content blockquote.quoteIcon {
+      border-left: 4px solid !important;
+      border-top: 0 !important;
+      border-right: 0 !important;
+      border-bottom: 0 !important;
+      border-radius: 4px !important;
+      padding: 1rem 1.25rem !important;
+      margin: 1.25rem 0 !important;
+      font-size: 1rem !important;
+      line-height: 1.6 !important;
+    }
+    [data-automation-id="textBox"] blockquote.quoteBox p:last-child,
+    [data-automation-id="textBox"] blockquote.quoteLeft p:last-child,
+    [data-automation-id="textBox"] blockquote.quoteIcon p:last-child,
+    .ck-content blockquote.quoteBox p:last-child,
+    .ck-content blockquote.quoteLeft p:last-child,
+    .ck-content blockquote.quoteIcon p:last-child {
+      margin-bottom: 0 !important;
+    }
+    [data-automation-id="textBox"] blockquote.quoteBox::before,
+    [data-automation-id="textBox"] blockquote.quoteLeft::before,
+    [data-automation-id="textBox"] blockquote.quoteIcon::before,
+    .ck-content blockquote.quoteBox::before,
+    .ck-content blockquote.quoteLeft::before,
+    .ck-content blockquote.quoteIcon::before {
+      display: block !important;
+      font-weight: 700 !important;
+      font-size: 0.72rem !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.04em !important;
+      margin-bottom: 0.5rem !important;
+    }
+
+    /* BOXED → Tight (required) — red */
+    [data-automation-id="textBox"] blockquote.quoteBox,
+    .ck-content blockquote.quoteBox {
+      background: var(--bg-tight) !important;
+      border-left-color: var(--border-tight) !important;
+    }
+    [data-automation-id="textBox"] blockquote.quoteBox::before,
+    .ck-content blockquote.quoteBox::before {
+      content: 'Tight (required)' !important;
+      color: var(--border-tight) !important;
+    }
+
+    /* SIDE BORDER → Guidance (recommended) — blue */
+    [data-automation-id="textBox"] blockquote.quoteLeft,
+    .ck-content blockquote.quoteLeft {
+      background: var(--bg-guidance) !important;
+      border-left-color: var(--border-guidance) !important;
+    }
+    [data-automation-id="textBox"] blockquote.quoteLeft::before,
+    .ck-content blockquote.quoteLeft::before {
+      content: 'Guidance (recommended)' !important;
+      color: var(--border-guidance) !important;
+    }
+
+    /* QUOTE ICON → Example — yellow */
+    [data-automation-id="textBox"] blockquote.quoteIcon,
+    .ck-content blockquote.quoteIcon {
+      background: var(--bg-example) !important;
+      border-left-color: var(--border-example) !important;
+    }
+    [data-automation-id="textBox"] blockquote.quoteIcon::before,
+    .ck-content blockquote.quoteIcon::before {
+      content: 'Example' !important;
+      /* In light theme, bright yellow on yellow bg is hard to read; use a
+         richer amber for the label only. Dark/sepia tokens already give
+         contrast-correct values. */
+      color: #b8960a !important;
+    }
+    /* Dark and sepia: token already darker, use it directly */
+    [data-theme="dark"].hb-active [data-automation-id="textBox"] blockquote.quoteIcon::before,
+    [data-theme="dark"].hb-active .ck-content blockquote.quoteIcon::before,
+    [data-theme="sepia"].hb-active [data-automation-id="textBox"] blockquote.quoteIcon::before,
+    [data-theme="sepia"].hb-active .ck-content blockquote.quoteIcon::before {
+      color: var(--border-example) !important;
+    }
+
+    /* ===== FAQ COLLAPSIBLES =====
+       Customizer JS wraps SP's heading container <div class="anchor-h4"> (and
+       answer paragraphs) into <div class="hb-faq"> with a sibling
+       <div class="hb-faq-body">. .open class toggles visibility + chevron. */
+    .hb-faq {
+      margin: 0.75rem 0;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+    }
+    .hb-faq.open { border-color: var(--light-teal); }
+
+    /* Reset SP's heading-container margins inside our FAQ; the FAQ wrapper
+       owns spacing. Hide SP's permalink decoration spans/anchors inside. */
+    .hb-faq > .anchor-h4 {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: var(--bg-surface);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .hb-faq.open > .anchor-h4 {
+      border-radius: 6px 6px 0 0;
+    }
+    .hb-faq > .anchor-h4 > span,
+    .hb-faq > .anchor-h4 > a:not(.hb-faq-summary):not(.hb-faq-summary a) {
+      display: none !important;
+    }
+    /* The auto-injected permalink anchor INSIDE the H4 — neutralize it so
+       clicking the heading toggles instead of trying to navigate. */
+    .hb-faq > .anchor-h4 > h4 > a {
+      color: inherit !important;
+      text-decoration: none !important;
+      pointer-events: none;
+    }
+
+    .hb-faq-summary {
+      margin: 0 !important;
+      padding: 0.8rem 1.1rem !important;
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      cursor: pointer;
+      background: transparent !important;
+      list-style: none;
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.6rem;
+      transition: background 0.15s;
+      user-select: none;
+      border-bottom: 0 !important;
+      border-top: 0 !important;
+      color: var(--text) !important;
+    }
+    .hb-faq > .anchor-h4:hover { background: var(--dark-gray); }
+    .hb-faq-summary:focus-visible {
+      outline: 2px solid var(--light-teal);
+      outline-offset: -2px;
+    }
+
+    .hb-faq-summary::before {
+      content: '';
+      display: inline-block;
+      width: 0.45rem;
+      height: 0.45rem;
+      border-right: 2px solid var(--text-secondary);
+      border-bottom: 2px solid var(--text-secondary);
+      transform: rotate(-45deg);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .hb-faq.open .hb-faq-summary::before { transform: rotate(45deg); }
+
+    .hb-faq-body {
+      display: none;
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    .hb-faq.open .hb-faq-body { display: block; }
+
+    /* Absorbed media web parts (YouTube / video) pulled into the FAQ body by
+       wireCollapsibles. Strip SP's default per-web-part margins so the embed
+       sits flush, and cap width to the FAQ content area. */
+    .hb-faq-body > [data-automation-id="CanvasControl"] {
+      margin: 1rem 0 0 !important;
+      padding: 0 !important;
+    }
+    .hb-faq-body > [data-automation-id="CanvasControl"]:first-child {
+      margin-top: 0 !important;
+    }
+    .hb-faq-body > [data-automation-id="CanvasControl"] > * {
+      max-width: 100% !important;
+    }
+
+    /* ===== FAQ "Copy link" button (per-H4 share helper) =====
+       Lives inside the H4 .hb-faq-summary, floats right via margin-left:auto
+       (the summary is display:flex). Icon-only circle. Click copies the
+       #faq-{slug} URL; the .copied state briefly swaps the icon to ✓. */
+    .hb-faq-copy-link {
+      margin-left: auto !important;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.85rem;
+      height: 1.85rem;
+      padding: 0;
+      border: 1px solid var(--border) !important;
+      border-radius: 999px;
+      background: var(--bg-surface) !important;
+      color: var(--text-secondary) !important;
+      font-family: var(--body-font) !important;
+      font-size: 0.85rem !important;
+      line-height: 1 !important;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+      user-select: none;
+    }
+    .hb-faq-copy-link:hover {
+      border-color: var(--dark-blue) !important;
+      color: var(--dark-blue) !important;
+      background: var(--bg) !important;
+    }
+    .hb-faq-copy-link:active { transform: scale(0.93); }
+    .hb-faq-copy-link:focus-visible {
+      outline: 2px solid var(--light-teal);
+      outline-offset: 2px;
+    }
+    .hb-faq-copy-link-icon {
+      font-size: 0.95em;
+      line-height: 1;
+    }
+    .hb-faq-copy-link.copied {
+      background: #2e7d32 !important;
+      border-color: #2e7d32 !important;
+      color: #fff !important;
+    }
+
+    /* ===== TOOLBAR (injected at top of body, position:fixed above SP chrome) ===== */
+    #hb-toolbar-root {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100000;
+    }
+    .toolbar {
+      position: relative;
+      height: var(--toolbar-height);
+      background: var(--bg-toolbar);
+      border-bottom: 1px solid var(--border-toolbar);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1rem; gap: 0.5rem;
+    }
+    /* Push the SP page content down so our toolbar isn't covering it */
+    body { padding-top: var(--toolbar-height) !important; }
+
+    /* Desktop body padding for the sidebar gutter. The sidebar's own transform
+       overrides live AFTER the default .sidebar rule (further down in this
+       file) so they win on source order. */
+    @media (min-width: 901px) {
+      body {
+        padding-left: var(--nav-width) !important;
+        transition: padding-left 0.3s ease;
+      }
+      .overlay { display: none !important; }
+    }
+    &.hb-nav-collapsed {
+      @media (min-width: 901px) {
+        body { padding-left: 0 !important; }
+      }
+    }
+
+    /* ===== Apply theme to SharePoint page content =====
+       Modern SP uses Fluent UI v9. Its FluentProvider sets backgrounds via design
+       tokens (CSS custom properties), so the cleanest way to retint the page is
+       to OVERRIDE those tokens here. Backgrounds then propagate naturally through
+       all Fluent components. We also clear backgrounds on SP's legacy canvas
+       containers to let body show through. */
+
+    /* Fluent UI v9 token overrides */
+    --colorNeutralBackground1: var(--bg);
+    --colorNeutralBackground1Hover: var(--bg-surface);
+    --colorNeutralBackground1Pressed: var(--bg-surface);
+    --colorNeutralBackground1Selected: var(--bg-surface);
+    --colorNeutralBackground2: var(--bg-surface);
+    --colorNeutralBackground2Hover: var(--bg-surface);
+    --colorNeutralBackground3: var(--bg-surface);
+    --colorNeutralBackground4: var(--bg-surface);
+    --colorNeutralBackground5: var(--bg);
+    --colorNeutralBackground6: var(--bg);
+    --colorNeutralForeground1: var(--text);
+    --colorNeutralForeground1Hover: var(--text);
+    --colorNeutralForeground2: var(--text-secondary);
+    --colorNeutralForeground3: var(--text-secondary);
+    --colorNeutralForeground4: var(--text-secondary);
+    --colorNeutralStroke1: var(--border);
+    --colorNeutralStroke2: var(--border);
+    --colorNeutralStrokeSubtle: var(--border);
+    --colorNeutralStrokeAccessible: var(--border);
+    --colorBrandBackground: var(--dark-blue);
+    --colorBrandForeground1: var(--blue);
+    --colorBrandForeground2: var(--blue);
+
+    body, html {
+      background: var(--bg) !important;
+      color: var(--text) !important;
+    }
+
+    /* SharePoint legacy + modern canvas containers */
+    [data-automation-id="contentScrollRegion"],
+    [data-automation-id="ScrollableRegion"],
+    [data-automation-id="canvasZone"],
+    [data-automation-id="mainScrollRegionInnerContent"],
+    [data-sp-feature-tag="CanvasZone"],
+    [data-sp-feature-tag="CanvasSection"],
+    [data-sp-feature-tag="CanvasControl"],
+    [class*="canvasZone"],
+    [class*="canvasComponent"],
+    [class*="canvasSection"],
+    [class*="controlZone"],
+    [class*="mainContent"],
+    .control-zone,
+    #spPageCanvasContent,
+    section.mainContent,
+    article[class*="p_"],
+    div[role="main"] {
+      background: transparent !important;
+      color: var(--text) !important;
+    }
+
+    /* Fluent UI v9 provider — sets its own background via design tokens.
+       Force its surface to match our theme by re-setting the tokens AT the
+       provider element itself (so Griffel-generated scoped tokens don't shadow
+       the ones we set on .hb-active above), plus a hard background override. */
+    [class*="fui-FluentProvider"] {
+      --colorNeutralBackground1: var(--bg);
+      --colorNeutralBackground1Hover: var(--bg-surface);
+      --colorNeutralBackground1Pressed: var(--bg-surface);
+      --colorNeutralBackground2: var(--bg-surface);
+      --colorNeutralBackground3: var(--bg-surface);
+      --colorNeutralForeground1: var(--text);
+      --colorNeutralForeground2: var(--text-secondary);
+      --fontFamilyBase: 'Libre Franklin', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: transparent !important;
+      background-color: transparent !important;
+      color: var(--text) !important;
+    }
+
+    /* SPCanvas + Canvas* layers. Targeted selectors only — no universal `*`. */
+    .SPCanvas,
+    [class*="SPCanvas"],
+    .CanvasComponent,
+    [data-automation-id="Canvas"],
+    [data-automation-id="CanvasLayout"],
+    [data-automation-id="CanvasZone"],
+    [data-automation-id="CanvasSection"],
+    [class*="Canvas--withLayout"],
+    [class*="CanvasLayout"],
+    [class*="CanvasZone"],
+    [class*="CanvasSection"],
+    [data-sp-feature-tag^="CanvasComponent"],
+    [data-automation-id="mainScrollRegionInnerContent"] {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+
+    /* SP Text web parts (the "asdsadasd" style content) */
+    div[data-automation-id="textPartEditable"],
+    div[role="textbox"][contenteditable],
+    [data-automation-id="textWebPart"],
+    .ms-rtePlaceHolder {
+      background: transparent !important;
+      color: var(--text) !important;
+    }
+    .toolbar-left { display: flex; align-items: center; gap: 0.75rem; }
+    .toolbar-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .menu-toggle {
+      display: none; background: none; border: none;
+      color: #fff; font-size: 1.4rem; cursor: pointer; padding: 0.25rem; line-height: 1;
+    }
+    .toolbar-logo { height: 32px; width: 32px; border-radius: 50%; flex-shrink: 0; }
+    .toolbar-brand {
+      font-weight: 700; font-size: 0.9rem; color: #fff; white-space: nowrap;
+      letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+    }
+    .tb {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;
+      color: #fff; cursor: pointer; padding: 0.35rem 0.65rem;
+      font-size: 0.82rem; line-height: 1; transition: all 0.15s; white-space: nowrap;
+      font-family: inherit; display: inline-flex; align-items: center; gap: 0.3rem;
+    }
+    .tb:hover { background: rgba(255,255,255,0.2); }
+    .tb.active { background: var(--dark-blue); color: #fff; border-color: var(--dark-blue); }
+
+    /* Hamburger toolbar button — sized to match the "Aa" button next to it. */
+    #btn-menu {
+      min-width: 2.2rem;
+      justify-content: center;
+      font-size: 1rem;
+      padding: 0.3rem 0.55rem;
+    }
+
+    /* — Aa Popover — */
+    .aa-wrap { position: relative; }
+    .aa-popover {
+      display: none; position: absolute; top: calc(100% + 8px); right: 0;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12); padding: 1.25rem; width: 280px; z-index: 300;
+    }
+    .aa-popover.open { display: block; }
+    .aa-section { margin-bottom: 1rem; }
+    .aa-section:last-child { margin-bottom: 0; }
+    .aa-label {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-secondary); margin-bottom: 0.5rem;
+    }
+    .aa-row { display: flex; gap: 0.35rem; }
+    .aa-row .tb { flex: 1; justify-content: center; font-size: 0.8rem; padding: 0.4rem 0.3rem; }
+    .aa-size-row { display: flex; align-items: center; gap: 0.5rem; }
+    .aa-size-row .tb { width: 36px; height: 36px; justify-content: center; font-size: 1rem; padding: 0; flex: none; }
+    .aa-popover .tb { background: var(--bg-surface); color: var(--text); border-color: var(--border); }
+    .aa-popover .tb:hover { background: var(--bg-nav-hover); border-color: var(--text-secondary); }
+    .aa-popover .tb.active { background: var(--dark-blue); color: #fff; border-color: var(--dark-blue); }
+    .aa-size-label { flex: 1; text-align: center; font-size: 0.82rem; color: var(--text-secondary); }
+    .theme-swatch {
+      width: 100%; height: 32px; border-radius: 6px; border: 2px solid var(--border);
+      cursor: pointer; transition: border-color 0.15s;
+    }
+    .theme-swatch:hover { border-color: var(--text-secondary); }
+    .theme-swatch.active { border-color: var(--dark-blue); border-width: 2.5px; }
+    .swatch-light { background: #fff; }
+    .swatch-sepia { background: #f5edd6; }
+    .swatch-dark { background: #1e1e1e; }
+    .aa-themes { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem; }
+    .aa-theme-opt { text-align: center; }
+    .aa-theme-opt span { display: block; font-size: 0.68rem; margin-top: 0.25rem; color: var(--text-secondary); }
+
+    /* ===== SEARCH ===== */
+    .search-wrap { position: relative; }
+    #btn-search, #btn-aa { padding: 0.4rem 0.75rem; }
+    .search-input {
+      width: 0; opacity: 0; border: 1px solid var(--border); border-radius: 6px;
+      padding: 0.35rem 0.65rem; font-size: 0.82rem; font-family: inherit;
+      background: var(--bg); color: var(--text); outline: none;
+      transition: width 0.25s, opacity 0.25s, padding 0.25s;
+    }
+    .search-input.open { width: 200px; opacity: 1; }
+    .search-input:focus { border-color: var(--light-teal); }
+    .search-results {
+      display: none; position: absolute; top: calc(100% + 6px); right: 0;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.12); width: 340px; max-height: 400px;
+      overflow-y: auto; z-index: 310;
+    }
+    .search-results.open { display: block; }
+    .search-results-header {
+      padding: 0.6rem 0.85rem; font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    .search-result {
+      display: block; padding: 0.6rem 0.85rem; text-decoration: none; color: var(--text);
+      border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s;
+    }
+    .search-result:last-child { border-bottom: none; }
+    .search-result:hover { background: var(--bg-surface); text-decoration: none; }
+    .search-result-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.15rem; }
+    .search-result-snippet { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; }
+    .search-result-snippet mark { background: rgba(255,205,0,0.35); color: inherit; border-radius: 2px; padding: 0 1px; }
+    .search-no-results { padding: 1rem 0.85rem; font-size: 0.85rem; color: var(--text-secondary); text-align: center; }
+    .search-highlight { background: rgba(255,205,0,0.4); border-radius: 2px; padding: 0 1px; scroll-margin-top: calc(var(--toolbar-height) + 2rem); }
+
+    /* ===== READING PROGRESS BAR (below toolbar, inside #hb-toolbar-root) ===== */
+    #hb-toolbar-root .progress-bar { position: relative; width: 100%; height: 3px; background: var(--border); }
+    #hb-toolbar-root .progress-bar-fill { height: 100%; width: 0; background: var(--red); transition: width 0.1s linear; }
+
+    /* ===== AGENTS FAB (bottom-right pill that opens SP Copilot/Agents) ===== */
+    .hb-agents-fab {
+      position: fixed;
+      bottom: 48px;
+      right: 16px;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 1.1rem 0.45rem 0.45rem;
+      background: var(--dark-blue);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+      font-family: var(--body-font);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      transition: transform 0.18s, box-shadow 0.18s, background 0.15s;
+      user-select: none;
+    }
+    .hb-agents-fab:hover {
+      transform: translateY(-1px) scale(1.03);
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.28);
+    }
+    .hb-agents-fab:focus-visible {
+      outline: 2px solid var(--yellow);
+      outline-offset: 2px;
+    }
+    .hb-agents-fab .hb-agents-fab-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .hb-agents-fab .hb-agents-fab-label {
+      white-space: nowrap;
+    }
+    @media (max-width: 600px) {
+      /* Collapse to icon-only on narrow screens to avoid overlapping content */
+      .hb-agents-fab .hb-agents-fab-label { display: none; }
+      .hb-agents-fab { padding: 0.5rem; }
+    }
+
+    /* Loading state — pulsing icon + cursor change while SP loads Copilot. */
+    @keyframes hbAgentsSpin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes hbAgentsPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(0.9); opacity: 0.7; }
+    }
+    .hb-agents-fab.hb-agents-loading,
+    .tb#btn-agents.hb-agents-loading {
+      cursor: progress;
+      opacity: 0.85;
+    }
+    .hb-agents-fab.hb-agents-loading .hb-agents-fab-icon {
+      animation: hbAgentsPulse 0.9s ease-in-out infinite;
+      position: relative;
+    }
+    .hb-agents-fab.hb-agents-loading .hb-agents-fab-icon::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: rgba(255, 255, 255, 0.85);
+      animation: hbAgentsSpin 0.8s linear infinite;
+    }
+    /* Toolbar Agents button — small inline spinner */
+    .tb#btn-agents.hb-agents-loading {
+      position: relative;
+      padding-right: 1.8rem;
+    }
+    .tb#btn-agents.hb-agents-loading::after {
+      content: '';
+      position: absolute;
+      right: 0.55rem;
+      top: 50%;
+      width: 0.7rem;
+      height: 0.7rem;
+      margin-top: -0.35rem;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+      animation: hbAgentsSpin 0.8s linear infinite;
+    }
+
+    /* ===== READING POSITION (bottom) ===== */
+    .reading-pos {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 32px; background: var(--bg); border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1rem; font-size: 0.72rem; color: var(--text-secondary); z-index: 99;
+    }
+    .reading-pos-section { font-weight: 600; color: var(--text); }
+    .reading-pos-progress { display: flex; align-items: center; gap: 0.5rem; }
+    .reading-pos-bar { width: 80px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .reading-pos-bar-fill { height: 100%; background: var(--red); border-radius: 2px; transition: width 0.15s; }
+
+    /* ===== SIDEBAR =====
+       Default (mobile): hidden as an overlay; toggle button slides it in.
+       Desktop (>900px): always visible by default; toggle hides it (collapse mode). */
+    nav.sidebar,
+    .sidebar {
+      position: fixed !important; top: var(--toolbar-height); left: 0; bottom: 32px;
+      width: var(--nav-width) !important; background: var(--bg-nav);
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      padding: 1rem 0; z-index: 99999 !important;
+      transform: translateX(-100%) !important;
+      transition: transform 0.3s ease;
+      border-right: 1px solid var(--border);
+      box-shadow: 2px 0 16px rgba(0,0,0,0.15);
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      box-sizing: border-box;
+    }
+    nav.sidebar.open,
+    .sidebar.open { transform: translateX(0) !important; }
+
+    /* Desktop: sidebar visible by default. This block lives AFTER the .sidebar
+       default above so the desktop transform wins on source order even when
+       specificity ties. */
+    @media (min-width: 901px) {
+      nav.sidebar,
+      .sidebar { transform: translateX(0) !important; }
+    }
+    /* Desktop collapsed (Focus/Hamburger pressed to hide the sidebar) */
+    &.hb-nav-collapsed {
+      @media (min-width: 901px) {
+        nav.sidebar,
+        .sidebar { transform: translateX(-100%) !important; }
+      }
+    }
+
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+    .nav-section-label {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--red);
+      padding: 0.75rem 1.25rem 0.3rem;
+    }
+    /* Sidebar nav — exact prototype values, all colors driven by theme vars
+       so light / sepia / dark each look correct without overrides per level. */
+    .nav-link {
+      display: block;
+      padding: 0.35rem 1.25rem;
+      color: var(--text-nav);
+      text-decoration: none;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border-right: none;
+      border-top: none;
+      border-bottom: none;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: normal;
+      overflow-wrap: break-word;
+      box-sizing: border-box;
+    }
+
+    /* H1 → enlarged section-label (caps/red, larger to indicate hierarchy) */
+    .nav-link.nav-h1 {
+      padding: 0.85rem 1.25rem 0.4rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--red);
+      border-left: 0 !important;
+    }
+    .nav-link.nav-h1:hover {
+      background: transparent;
+      color: var(--red);
+      border-left-color: transparent;
+    }
+
+    /* H2 → dark-blue default text (darker than the base .nav-link gray) */
+    .nav-link.nav-h2 {
+      color: var(--dark-blue);
+      font-weight: 500;
+    }
+
+    /* H3 → prototype's .nav-link.sub */
+    .nav-link.nav-h3 {
+      padding-left: 2rem;
+      font-size: 0.78rem;
+    }
+
+    /* Hover — prototype style */
+    .nav-link:hover {
+      background: var(--bg-nav-hover);
+      color: var(--text-nav-active);
+      text-decoration: none;
+    }
+
+    /* Active (currently-visible section) — prototype style */
+    .nav-link.active {
+      color: var(--text-nav-active);
+      background: var(--bg-nav-active);
+      border-left-color: var(--red);
+      font-weight: 600;
+    }
+    [data-theme="dark"].hb-active .nav-link.active { border-left-color: var(--yellow); }
+
+    /* (H2/H1 theme overrides moved to top-level :global scope — see bottom of
+       file. Nesting them under .hb-active produced broken double-ancestor
+       selectors that never matched.) */
+
+    /* Native scroll-margin so anchor jumps land below our fixed toolbar */
+    h1[id], h2[id], h3[id] {
+      scroll-margin-top: calc(var(--toolbar-height) + 1.5rem);
+    }
+
+    /* ===== MAIN ===== */
+    .main {
+      margin-left: var(--nav-width); margin-top: var(--toolbar-height);
+      padding: 2.5rem 3rem 4rem; max-width: calc(var(--content-max-width) + 6rem);
+      padding-bottom: 3rem; margin-bottom: 32px;
+      transition: margin 0.3s;
+    }
+    .main > section { margin-bottom: 3rem; }
+    .main > section + section { border-top: 1px solid var(--border); padding-top: 2.5rem; }
+    .lead { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6; }
+
+    /* ===== CALLOUTS ===== */
+    .callout { border-left: 4px solid; border-radius: 4px; padding: 1rem 1.25rem; margin: 1.25rem 0; font-size: 0.92rem; }
+    .callout p:last-child { margin-bottom: 0; }
+    .callout-tight { background: var(--bg-tight); border-color: var(--border-tight); }
+    .callout-tight::before { content: 'Tight (required)'; display: block; font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--border-tight); margin-bottom: 0.5rem; }
+    .callout-guidance { background: var(--bg-guidance); border-color: var(--border-guidance); }
+    .callout-guidance::before { content: 'Guidance (recommended)'; display: block; font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--border-guidance); margin-bottom: 0.5rem; }
+    .callout-example { background: var(--bg-example); border-color: var(--border-example); }
+    .callout-example::before { content: 'Example'; display: block; font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--border-example); margin-bottom: 0.5rem; }
+
+    /* ===== SECTION BANNERS ===== */
+    .section-banner {
+      display: flex; align-items: center; justify-content: center; gap: 1.25rem;
+      background: #aa272f; color: #fff; padding: 1rem 1.5rem;
+      margin: 2.5rem 0 1.5rem; border-radius: 8px;
+    }
+    .section-banner .banner-ribbon { height: 2.75rem; width: auto; flex-shrink: 0; }
+    .section-banner .banner-title {
+      margin: 0; padding: 0; border: none; color: #fff;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      font-weight: 700; font-size: 1.5rem; text-align: center; flex: 0 1 auto;
+    }
+    @media (max-width: 600px) {
+      .section-banner { gap: 0.75rem; padding: 0.75rem 1rem; }
+      .section-banner .banner-ribbon { height: 2rem; }
+      .section-banner .banner-title { font-size: 1.15rem; letter-spacing: 0.08em; }
+    }
+
+    /* ===== DETAILS / ACCORDIONS (prototype fallback — SP-native sections preferred) ===== */
+    details { margin: 0.75rem 0; border: 1px solid var(--border); border-radius: 6px; }
+    details[open] { border-color: var(--light-teal); }
+    details.slr { border-left: 4px solid; }
+    details.slr-chinese { border-left-color: #aa272f; }
+    details.slr-chinese summary { color: #aa272f; }
+    details.slr-service { border-left-color: #14509e; }
+    details.slr-service summary { color: #14509e; }
+    details.slr-spirituality { border-left-color: #577899; }
+    details.slr-spirituality summary { color: #577899; }
+    details.slr-technology { border-left-color: #ffcd00; }
+    details.slr-technology summary { color: #b8960a; }
+    summary {
+      padding: 0.8rem 1.1rem; font-weight: 600; font-size: 1rem;
+      cursor: pointer; background: var(--bg-surface);
+      list-style: none; display: flex; align-items: center; gap: 0.6rem;
+      transition: background 0.15s;
+    }
+    summary:hover { background: var(--dark-gray); }
+    summary::before {
+      content: ''; display: inline-block; width: 0.45rem; height: 0.45rem;
+      border-right: 2px solid var(--text-secondary); border-bottom: 2px solid var(--text-secondary);
+      transform: rotate(-45deg); transition: transform 0.2s; flex-shrink: 0;
+    }
+    details[open] > summary::before { transform: rotate(45deg); }
+    summary::-webkit-details-marker { display: none; }
+    .details-content { padding: 1rem 1.25rem; border-top: 1px solid var(--border); }
+
+    /* ===== GLOSSARY TERMS (inline) ===== */
+    .term {
+      font-style: normal; background: var(--dfn-bg);
+      border-bottom: 1.5px dashed var(--dfn-border);
+      padding: 0.05em 0.3em; border-radius: 3px;
+      cursor: help; position: relative;
+    }
+
+    /* ===== PATHWAY CAROUSEL ===== */
+    .pathway-carousel {
+      display: flex; gap: 1rem; margin: 1.5rem 0;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 1.5rem;
+      -webkit-overflow-scrolling: touch;
+      padding: 0.4rem 0.25rem 0.75rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .pathway-carousel::-webkit-scrollbar { height: 6px; }
+    .pathway-carousel::-webkit-scrollbar-track { background: transparent; }
+    .pathway-carousel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .pathway-carousel::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+    .pathway-card {
+      scroll-snap-align: center; flex-shrink: 0;
+      width: 260px; min-height: 130px;
+      border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;
+      background: var(--bg-surface); text-decoration: none; color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; cursor: pointer;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .pathway-card:hover {
+      border-color: var(--light-teal); box-shadow: 0 4px 16px rgba(0,42,66,0.1);
+      text-decoration: none; transform: translateY(-2px);
+    }
+    .pathway-card h4 { margin: 0 0 0.4rem; font-size: 0.95rem; color: var(--dark-blue); }
+    .pathway-card p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; }
+    .pathway-hint { font-size: 0.75rem; color: var(--text-secondary); text-align: center; margin-top: -0.25rem; margin-bottom: 0.5rem; }
+    @media (min-width: 900px) { .pathway-card { width: 280px; } }
+
+    /* ===== TABLES ===== */
+    table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.9rem; }
+    th, td { padding: 0.65rem 0.85rem; text-align: left; border: 1px solid var(--border); }
+    th { background: var(--dark-blue); color: #fff; font-weight: 600; font-size: 0.82rem; }
+    tr:nth-child(even) td { background: var(--bg-surface); }
+
+    /* ===== DOMAIN HEADER ===== */
+    .domain-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .domain-number {
+      display: flex; align-items: center; justify-content: center;
+      width: 2rem; height: 2rem; border-radius: 50%;
+      background: var(--dark-blue); color: #fff; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+    }
+
+    /* ===== FOCUS MODE ===== */
+    .sidebar.hb-focus-hidden { transform: translateX(-100%); }
+    .main.hb-focus-wide { margin-left: auto; margin-right: auto; max-width: calc(var(--content-max-width) + 6rem); }
+
+    /* ===== OVERLAY (behind sidebar, above page) ===== */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99998; }
+    .overlay.active { display: block; }
+
+    /* ===== RESPONSIVE ===== */
+    .menu-toggle { display: inline-block; }
+    @media (max-width: 900px) {
+      .toolbar-left { min-width: 0; overflow: hidden; }
+    }
+    @media (max-width: 600px) {
+      .toolbar-brand { font-size: 0.78rem; }
+      .tb { padding: 0.3rem 0.5rem; font-size: 0.78rem; }
+      .aa-popover { width: 260px; right: -0.5rem; }
+      .main { margin-bottom: 48px; }
+      .reading-pos { height: 40px; padding: 0 0.75rem; }
+    }
+
+    /* ===== GLOSSARY (section) ===== */
+    dl dt { font-weight: 600; margin-top: 0.75rem; }
+    dl dd { margin: 0.2rem 0 0.85rem 0; padding-left: 1rem; border-left: 2px solid var(--border); font-size: 0.92rem; color: var(--text-secondary); }
+
+    /* ===== ACRONYMS COLUMNS ===== */
+    .acr-cols { columns: 2; column-gap: 2rem; font-size: 0.88rem; }
+    .acr-cols p { margin-bottom: 0.35rem; break-inside: avoid; }
+
+    /* ===== EXTERNAL LINK BUTTON ===== */
+    .btn-external {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.85rem 1.25rem; border-radius: 10px; margin: 0.75rem 0 1.5rem;
+      border: 1.5px solid var(--border); background: var(--bg-surface);
+      text-decoration: none; color: var(--text); transition: all 0.2s;
+    }
+    .btn-external:hover {
+      border-color: var(--dark-blue); box-shadow: 0 2px 12px rgba(0,42,66,0.1);
+      transform: translateY(-1px); text-decoration: none;
+    }
+    .btn-external-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .btn-external strong { display: block; font-size: 0.95rem; color: var(--dark-blue); }
+    .btn-external small { display: block; font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.1rem; }
+    .btn-external-arrow { margin-left: auto; font-size: 1.1rem; color: var(--text-secondary); flex-shrink: 0; }
+
+    /* ===== TAXONOMY LINKS ===== */
+    .taxonomy-links { display: flex; flex-direction: column; gap: 0.4rem; margin: 0.5rem 0 1rem; }
+    .btn-taxonomy {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.55rem 1rem; border-radius: 8px;
+      border: 1.5px solid var(--border); background: var(--bg-surface);
+      text-decoration: none; color: var(--text); transition: all 0.2s;
+      font-size: 0.85rem;
+    }
+    .btn-taxonomy:hover {
+      border-color: var(--blue); box-shadow: 0 2px 8px rgba(20,80,158,0.1);
+      transform: translateY(-1px); text-decoration: none;
+    }
+    .btn-taxonomy-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .btn-taxonomy strong { font-size: 0.85rem; color: var(--blue); font-weight: 600; }
+    .btn-taxonomy-placeholder { opacity: 0.55; cursor: default; }
+    .btn-taxonomy-placeholder:hover { transform: none; box-shadow: none; border-color: var(--border); }
+    .btn-taxonomy-placeholder small { display: block; font-size: 0.72rem; color: var(--text-secondary); font-weight: 400; margin-top: 0.1rem; }
+
+    /* ===== SUBJECT CAROUSEL ===== */
+    .subject-carousel {
+      display: flex; gap: 0.5rem; overflow-x: auto; scroll-snap-type: x mandatory;
+      padding: 0.5rem 0.25rem 0.75rem; -webkit-overflow-scrolling: touch;
+    }
+    .subject-carousel::-webkit-scrollbar { height: 6px; }
+    .subject-carousel::-webkit-scrollbar-track { background: transparent; }
+    .subject-carousel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .subject-carousel::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+    .subject-chip {
+      scroll-snap-align: center; flex-shrink: 0;
+      padding: 0.45rem 1rem; border-radius: 20px; border: 1.5px solid var(--border);
+      background: var(--bg-surface); color: var(--text); font-size: 0.85rem;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .subject-chip:hover { border-color: var(--light-teal); background: rgba(87,120,153,0.08); }
+    .subject-chip.active { background: var(--dark-blue); color: #fff; border-color: var(--dark-blue); }
+    .subject-panel { display: none; animation: fadeIn 0.3s ease; }
+    .subject-panel.active { display: block; }
+    .subject-hint { font-size: 0.75rem; color: var(--text-secondary); text-align: center; margin-top: -0.25rem; margin-bottom: 0.5rem; }
+
+    /* ===== SOFTWARE DATABASE ===== */
+    .sw-db-header { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 1rem 0 0.75rem; }
+    .sw-db-search {
+      flex: 1 1 200px; padding: 0.5rem 0.75rem; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 0.85rem; background: var(--bg-surface);
+      color: var(--text); font-family: inherit; outline: none; transition: border-color 0.2s;
+    }
+    .sw-db-search:focus { border-color: var(--blue); }
+    .sw-db-chips { display: flex; gap: 0.35rem; overflow-x: auto; padding: 0.25rem 0; -webkit-overflow-scrolling: touch; }
+    .sw-db-chip {
+      flex-shrink: 0; padding: 0.3rem 0.75rem; border-radius: 16px;
+      border: 1.5px solid var(--border); background: var(--bg-surface);
+      color: var(--text); font-size: 0.78rem; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .sw-db-chip:hover { border-color: var(--light-teal); background: rgba(87,120,153,0.08); }
+    .sw-db-chip.active { background: var(--dark-blue); color: #fff; border-color: var(--dark-blue); }
+    .sw-db-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+    .sw-db-card {
+      border: 1.5px solid var(--border); border-radius: 10px; padding: 0.85rem 1rem;
+      background: var(--bg-surface); transition: all 0.2s; cursor: pointer;
+      text-decoration: none; color: var(--text); display: flex; flex-direction: column; gap: 0.35rem;
+    }
+    .sw-db-card:hover {
+      border-color: var(--blue); box-shadow: 0 2px 10px rgba(20,80,158,0.1);
+      transform: translateY(-1px); text-decoration: none;
+    }
+    .sw-db-card-name { font-weight: 600; font-size: 0.9rem; color: var(--dark-blue); }
+    .sw-db-card-desc {
+      font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .sw-db-badges { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: auto; padding-top: 0.35rem; }
+    .sw-db-badge { font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+    .sw-db-badge-div { background: rgba(20,80,158,0.1); color: var(--blue); }
+    .sw-db-badge-age { background: rgba(75,160,75,0.12); color: #2d7d2d; }
+    .sw-db-badge-age.review { background: rgba(170,39,47,0.1); color: var(--red); }
+    .sw-db-badge-cat { background: rgba(87,120,153,0.1); color: var(--light-teal); }
+    .sw-db-count { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.25rem; }
+    .sw-db-empty { text-align: center; padding: 2rem 1rem; color: var(--text-secondary); font-size: 0.9rem; }
+
+    a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+    a:hover { text-decoration-thickness: 2px; }
+
+    /* Hidden anchors that the build script injects for navigation */
+    .hb-anchor { display: block; position: relative; top: calc(-1 * (var(--toolbar-height) + 1rem)); visibility: hidden; height: 0; }
+  }
+
+  /* Theme-conditional rules (data-theme attribute lives on <html>, alongside .hb-active) */
+  .hb-active {
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  }
+
+  [data-theme="dark"].hb-active h3 { color: var(--light-teal); }
+  [data-theme="sepia"].hb-active h3 { color: #5a3e1b; }
+  [data-theme="dark"].hb-active a { color: #6fa8dc; }
+  [data-theme="sepia"].hb-active a { color: #5a3e1b; }
+
+  /* ===== DARK MODE CONTENT LEGIBILITY =====
+     The SP page renders body copy and headings inside [data-automation-id="textBox"]
+     (and .ck-content during in-page edits). On dark backgrounds the prototype
+     dark-blue / dark-text colors become unreadable, so force white on the body
+     and use light-teal accents on headings. These rules MUST live at top level
+     (outside .hb-active { }) so the [data-theme="dark"].hb-active compound
+     selector resolves correctly — nesting them re-prefixes with .hb-active and
+     they stop matching. */
+  [data-theme="dark"].hb-active [data-automation-id="textBox"],
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] p,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] li,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] span,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] td,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] th,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] div,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] strong,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] b,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] em,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] i,
+  [data-theme="dark"].hb-active .ck-content,
+  [data-theme="dark"].hb-active .ck-content p,
+  [data-theme="dark"].hb-active .ck-content li,
+  [data-theme="dark"].hb-active .ck-content span,
+  [data-theme="dark"].hb-active .ck-content td,
+  [data-theme="dark"].hb-active .ck-content th,
+  [data-theme="dark"].hb-active .ck-content div,
+  [data-theme="dark"].hb-active .ck-content strong,
+  [data-theme="dark"].hb-active .ck-content b,
+  [data-theme="dark"].hb-active .ck-content em,
+  [data-theme="dark"].hb-active .ck-content i {
+    color: #ffffff !important;
+  }
+  /* Headings: white for h1/h4, light-teal accent for h2/h3 section markers */
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] h1,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] h4,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] h5,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] h6,
+  [data-theme="dark"].hb-active .ck-content h1,
+  [data-theme="dark"].hb-active .ck-content h4,
+  [data-theme="dark"].hb-active .ck-content h5,
+  [data-theme="dark"].hb-active .ck-content h6 {
+    color: #ffffff !important;
+  }
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] h2,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] h3,
+  [data-theme="dark"].hb-active .ck-content h2,
+  [data-theme="dark"].hb-active .ck-content h3 {
+    color: var(--light-teal) !important;
+  }
+  /* Sepia equivalents — dark warm-brown for legibility on cream background */
+  [data-theme="sepia"].hb-active [data-automation-id="textBox"] h2,
+  [data-theme="sepia"].hb-active [data-automation-id="textBox"] h3,
+  [data-theme="sepia"].hb-active .ck-content h2,
+  [data-theme="sepia"].hb-active .ck-content h3 {
+    color: #5a3e1b !important;
+  }
+  /* Restore semantic colors that broaden white would otherwise clobber */
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] blockquote.quoteBox,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] blockquote.quoteBox *,
+  [data-theme="dark"].hb-active .ck-content blockquote.quoteBox,
+  [data-theme="dark"].hb-active .ck-content blockquote.quoteBox * {
+    color: #ffd7d9 !important;  /* required-callout: pale red on dark */
+  }
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] blockquote.quoteLeft,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] blockquote.quoteLeft *,
+  [data-theme="dark"].hb-active .ck-content blockquote.quoteLeft,
+  [data-theme="dark"].hb-active .ck-content blockquote.quoteLeft * {
+    color: #cfe2ff !important;  /* guidance-callout: pale blue on dark */
+  }
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] blockquote.quoteIcon,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] blockquote.quoteIcon *,
+  [data-theme="dark"].hb-active .ck-content blockquote.quoteIcon,
+  [data-theme="dark"].hb-active .ck-content blockquote.quoteIcon * {
+    color: #ffe7a8 !important;  /* example-callout: pale yellow on dark */
+  }
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] blockquote.quotePlain,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] blockquote.quotePlain *,
+  [data-theme="dark"].hb-active .ck-content blockquote.quotePlain,
+  [data-theme="dark"].hb-active .ck-content blockquote.quotePlain * {
+    color: #cfd6dc !important;  /* lead/subheading: muted on dark */
+  }
+  /* Glossary terms keep the dotted accent + readable color in dark */
+  [data-theme="dark"].hb-active .term {
+    color: var(--light-teal) !important;
+    border-bottom-color: var(--light-teal) !important;
+  }
+  /* Links inside content keep their themed blue (already set above) — but if
+     a link sits inside a paragraph it would have been forced white. Restore: */
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] a,
+  [data-theme="dark"].hb-active [data-automation-id="textBox"] a *,
+  [data-theme="dark"].hb-active .ck-content a,
+  [data-theme="dark"].hb-active .ck-content a * {
+    color: #6fa8dc !important;
+  }
+  [data-theme="dark"].hb-active .tb.active { background: var(--light-teal); color: var(--dark-blue); border-color: var(--light-teal); }
+  [data-theme="sepia"].hb-active .tb.active { background: #3e2f1c; color: #f5edd6; border-color: #3e2f1c; }
+  [data-theme="dark"].hb-active .aa-popover .tb.active { background: var(--light-teal); color: var(--dark-blue); border-color: var(--light-teal); }
+  [data-theme="sepia"].hb-active .aa-popover .tb.active { background: #3e2f1c; color: #f5edd6; border-color: #3e2f1c; }
+  [data-theme="dark"].hb-active .theme-swatch.active { border-color: var(--yellow); }
+  [data-theme="dark"].hb-active .nav-section-label,
+  [data-theme="dark"].hb-active .nav-link.nav-h1 { color: var(--light-teal) !important; }
+  [data-theme="dark"].hb-active .nav-link.nav-h2 { color: var(--light-teal) !important; }
+  [data-theme="dark"].hb-active .nav-link.nav-h3 { color: var(--text-nav) !important; }
+  [data-theme="sepia"].hb-active .nav-link.nav-h2 { color: #3e2f1c !important; }
+  [data-theme="sepia"].hb-active .nav-link.nav-h3 { color: #5a4a34 !important; }
+
+  /* CTA card title — broaden to all descendants so the <p> SP renders is also covered */
+  [data-theme="dark"].hb-active [class*="htmlOverlayTextWrapper-"],
+  [data-theme="dark"].hb-active [class*="htmlOverlayTextWrapper-"] *,
+  [data-theme="dark"].hb-active [data-automation-id="image-overlay-text"],
+  [data-theme="dark"].hb-active [data-automation-id="image-overlay-text"] * {
+    color: var(--yellow) !important;
+  }
+  [data-theme="sepia"].hb-active [class*="htmlOverlayTextWrapper-"],
+  [data-theme="sepia"].hb-active [class*="htmlOverlayTextWrapper-"] *,
+  [data-theme="sepia"].hb-active [data-automation-id="image-overlay-text"],
+  [data-theme="sepia"].hb-active [data-automation-id="image-overlay-text"] * {
+    color: #5a3e1b !important;
+  }
+  /* CTA card "Jump to Explore" button — keep red on dark/sepia for brand consistency */
+  [data-theme="dark"].hb-active [class*="buttonContainer-"] button,
+  [data-theme="dark"].hb-active [class*="buttonContainer-"] a,
+  [data-theme="dark"].hb-active [class*="buttonContainer-"] button *,
+  [data-theme="dark"].hb-active [class*="buttonContainer-"] a *,
+  [data-theme="dark"].hb-active [class*="actionContainer-"] button,
+  [data-theme="dark"].hb-active [class*="actionContainer-"] a,
+  [data-theme="dark"].hb-active [class*="actionContainer-"] button *,
+  [data-theme="dark"].hb-active [class*="actionContainer-"] a * {
+    color: var(--light-red) !important;
+  }
+
+  /* Agents FAB — theme variants */
+  [data-theme="dark"].hb-active .hb-agents-fab {
+    background: var(--light-teal);
+    color: var(--dark-blue);
+  }
+  [data-theme="dark"].hb-active .hb-agents-fab .hb-agents-fab-icon {
+    background: rgba(0, 0, 0, 0.18);
+  }
+  [data-theme="sepia"].hb-active .hb-agents-fab {
+    background: #3e2f1c;
+    color: #f5edd6;
+  }
+  [data-theme="sepia"].hb-active .hb-agents-fab .hb-agents-fab-icon {
+    background: rgba(245, 237, 214, 0.2);
+  }
+  [data-theme="dark"].hb-active .nav-link.active { border-left-color: var(--yellow); }
+  [data-theme="dark"].hb-active .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+  [data-theme="dark"].hb-active summary:hover,
+  [data-theme="dark"].hb-active .hb-faq-summary:hover { background: #2a2a2a; }
+  [data-theme="sepia"].hb-active summary:hover,
+  [data-theme="sepia"].hb-active .hb-faq-summary:hover { background: #e0d5b8; }
+  [data-theme="dark"].hb-active details.slr-chinese summary { color: var(--light-red); }
+  [data-theme="dark"].hb-active details.slr-service summary { color: #6ba3eb; }
+  [data-theme="dark"].hb-active details.slr-spirituality summary { color: var(--light-teal); }
+  [data-theme="dark"].hb-active details.slr-technology summary { color: var(--yellow); }
+  [data-theme="dark"].hb-active th { background: #1a3a52; }
+  [data-theme="sepia"].hb-active th { background: #3e2f1c; color: #f5edd6; }
+  [data-theme="dark"].hb-active .domain-number { background: var(--light-teal); color: var(--dark-blue); }
+  [data-theme="sepia"].hb-active .domain-number { background: #3e2f1c; color: #f5edd6; }
+  [data-theme="dark"].hb-active .pathway-card h4 { color: var(--yellow); }
+  [data-theme="sepia"].hb-active .pathway-card h4 { color: #5a3e1b; }
+  [data-theme="dark"].hb-active .btn-external strong { color: var(--yellow); }
+  [data-theme="sepia"].hb-active .btn-external strong { color: #5a3e1b; }
+  [data-theme="dark"].hb-active .btn-external:hover { border-color: var(--light-teal); box-shadow: 0 2px 12px rgba(87,120,153,0.2); }
+  [data-theme="dark"].hb-active .btn-taxonomy:hover { border-color: var(--light-teal); box-shadow: 0 2px 8px rgba(87,120,153,0.2); }
+  [data-theme="dark"].hb-active .btn-taxonomy strong { color: var(--yellow); }
+  [data-theme="sepia"].hb-active .btn-taxonomy strong { color: #5a3e1b; }
+  [data-theme="dark"].hb-active .subject-chip.active { background: var(--light-teal); color: var(--dark-blue); border-color: var(--light-teal); }
+  [data-theme="sepia"].hb-active .subject-chip.active { background: #5a3e1b; color: #fdf6e3; border-color: #5a3e1b; }
+  [data-theme="dark"].hb-active .sw-db-chip.active { background: var(--light-teal); color: var(--dark-blue); border-color: var(--light-teal); }
+  [data-theme="sepia"].hb-active .sw-db-chip.active { background: #5a3e1b; color: #fdf6e3; border-color: #5a3e1b; }
+  [data-theme="dark"].hb-active .sw-db-card:hover { border-color: var(--light-teal); box-shadow: 0 2px 10px rgba(87,120,153,0.2); }
+  [data-theme="dark"].hb-active .sw-db-card-name { color: var(--yellow); }
+  [data-theme="sepia"].hb-active .sw-db-card-name { color: #5a3e1b; }
+  [data-theme="dark"].hb-active .sw-db-badge-div { background: rgba(87,120,153,0.2); color: #9ac0e6; }
+  [data-theme="dark"].hb-active .sw-db-badge-age { background: rgba(75,160,75,0.2); color: #6ec96e; }
+  [data-theme="dark"].hb-active .sw-db-badge-age.review { background: rgba(203,93,99,0.2); color: var(--light-red); }
+  [data-theme="dark"].hb-active .sw-db-badge-cat { background: rgba(87,120,153,0.2); color: #9ac0e6; }
+
+  /* ===== Hide redundant SharePoint chrome on the handbook page only ===== */
+  /* Our customizer only activates on Home1.aspx, so .hb-active scopes these hides to that page. */
+  .hb-active {
+    /* Top SharePoint suite bar + the modern SP app launcher rail. */
+    #SuiteNavWrapper,
+    #SuiteNavPlaceHolder,
+    #sp-appBar,
+    [data-sp-feature-tag="Suite Navigation Placeholder"],
+    [data-automation-id="suiteNavWrapper"],
+    .ms-Suitebar,
+    header.spoMainBar,
+    header[data-automation-id="suiteHeader"] {
+      display: none !important;
+    }
+    /* Site header card (the "Curriculum / private group / 405 members" banner)
+       SP uses CSS module classes with a hashed suffix like shyHeader-163, so we
+       match by class-name prefix. */
+    [data-automation-id="SiteHeader"],
+    .spSiteHeader,
+    div[data-automation-id="SiteHeader"],
+    [class*="shyHeader"] {
+      display: none !important;
+    }
+
+    /* SharePoint's Copilot / Agents flyout panel — sits inside our chrome,
+       not behind it. The default panel spans full viewport height which puts
+       its header behind our fixed toolbar and its footer behind the reading
+       position bar. Offset top by toolbar height and bottom by reading-pos
+       height (32px) so the panel slots cleanly between them. */
+    #spPropertyPaneContainer,
+    .spPropertyPaneContainer {
+      top: var(--toolbar-height) !important;
+      bottom: 32px !important;
+      height: auto !important;
+      max-height: calc(100vh - var(--toolbar-height) - 32px) !important;
+    }
+
+    /* ===== SP "Call to Action" web part → prototype's .pathway-card look =====
+       Structure (from inspector):
+         .webPartContainer-NNN
+           .ms-Shimmer-container      ← background image lives here, suppress it
+             .overlayContainer-NNN    ← the visible card (we style as pathway-card)
+               .htmlOverlayTextWrapper-NNN     ← title + description (data-automation-id="image-overlay-text")
+               .actionContainer-NNN .buttonContainer-NNN  ← "Jump to Explore" button */
+
+    /* Suppress the dark image background behind the overlay so the card reads
+       as a single light surface. */
+    [class*="ms-Shimmer-container"] {
+      background: transparent !important;
+    }
+    [class*="ms-Shimmer-container"] img,
+    [class*="ms-Shimmer-container"] picture,
+    [class*="ms-Shimmer-container"] [data-automation-id="image"],
+    [class*="ms-Shimmer-container"] [class*="backgroundImage" i] {
+      display: none !important;
+    }
+
+    /* The overlay = the visible card. Flex-centered so title + button sit
+       perfectly centered vertically and horizontally. Tight padding + capped
+       height keeps the row of six tiles compact. */
+    [class*="overlayContainer-"] {
+      background: var(--bg-surface) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 10px !important;
+      padding: 0.85rem 1rem !important;
+      color: var(--text) !important;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s !important;
+      cursor: pointer;
+      box-shadow: none !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      text-align: center !important;
+      min-height: 0 !important;
+      max-height: 110px !important;
+    }
+    /* SP wraps each CTA in its own .webPartContainer-NNN; we only want the
+       gap rule to bite on those that actually contain a CTA overlay, so use
+       :has(). 10px margin on each side gives a uniform 20px gap between
+       adjacent tiles (horizontal between columns, vertical between rows). */
+    [class*="webPartContainer-"]:has([class*="overlayContainer-"]) {
+      margin: 10px !important;
+    }
+    [class*="overlayContainer-"]:hover {
+      border-color: var(--light-teal) !important;
+      box-shadow: 0 4px 16px rgba(0, 42, 66, 0.1) !important;
+      transform: translateY(-2px) !important;
+    }
+
+    /* Title + description text — larger title, dark blue */
+    [class*="htmlOverlayTextWrapper-"],
+    [data-automation-id="image-overlay-text"] {
+      background: transparent !important;
+      color: var(--text) !important;
+      padding: 0 !important;
+      margin: 0 0 0.4rem !important;
+      text-align: center !important;
+      width: 100% !important;
+    }
+    /* The CTA card title is rendered as a <p> by SP, not a heading, so we
+       target both. Sentence case preserved (no text-transform). */
+    [class*="htmlOverlayTextWrapper-"],
+    [class*="htmlOverlayTextWrapper-"] *,
+    [data-automation-id="image-overlay-text"],
+    [data-automation-id="image-overlay-text"] * {
+      color: #002a42 !important;
+      font-size: 20px !important;
+      font-weight: 600 !important;
+      margin: 0 !important;
+      background: transparent !important;
+      border: 0 !important;
+      padding: 0 !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+      line-height: 1.3 !important;
+      text-align: center !important;
+    }
+
+    /* "Jump to Explore" button — sentence case, red, 16px text-link */
+    [class*="actionContainer-"],
+    [class*="buttonContainer-"] {
+      margin-top: 0.6rem !important;
+      background: transparent !important;
+      text-align: center !important;
+    }
+    [class*="buttonContainer-"] button,
+    [class*="buttonContainer-"] a,
+    [class*="actionContainer-"] button,
+    [class*="actionContainer-"] a,
+    [class*="buttonContainer-"] button *,
+    [class*="buttonContainer-"] a *,
+    [class*="actionContainer-"] button *,
+    [class*="actionContainer-"] a * {
+      background: transparent !important;
+      color: #aa272f !important;
+      border: 0 !important;
+      padding: 0 !important;
+      font-size: 16px !important;
+      font-weight: 600 !important;
+      text-decoration: none !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 0.2rem !important;
+    }
+    [class*="buttonContainer-"] button:hover,
+    [class*="buttonContainer-"] a:hover,
+    [class*="actionContainer-"] button:hover,
+    [class*="actionContainer-"] a:hover {
+      color: #aa272f !important;
+      text-decoration: underline !important;
+      background: transparent !important;
+    }
+
+    /* Theme overrides for the CTA card title color (button stays red) */
+    [data-theme="dark"].hb-active [class*="htmlOverlayTextWrapper-"] h1,
+    [data-theme="dark"].hb-active [class*="htmlOverlayTextWrapper-"] h2,
+    [data-theme="dark"].hb-active [class*="htmlOverlayTextWrapper-"] h3,
+    [data-theme="dark"].hb-active [class*="htmlOverlayTextWrapper-"] h4,
+    [data-theme="dark"].hb-active [data-automation-id="image-overlay-text"] h1,
+    [data-theme="dark"].hb-active [data-automation-id="image-overlay-text"] h2,
+    [data-theme="dark"].hb-active [data-automation-id="image-overlay-text"] h3,
+    [data-theme="dark"].hb-active [data-automation-id="image-overlay-text"] h4 {
+      color: var(--yellow) !important;
+    }
+    [data-theme="sepia"].hb-active [class*="htmlOverlayTextWrapper-"] h1,
+    [data-theme="sepia"].hb-active [class*="htmlOverlayTextWrapper-"] h2,
+    [data-theme="sepia"].hb-active [class*="htmlOverlayTextWrapper-"] h3,
+    [data-theme="sepia"].hb-active [class*="htmlOverlayTextWrapper-"] h4,
+    [data-theme="sepia"].hb-active [data-automation-id="image-overlay-text"] h1,
+    [data-theme="sepia"].hb-active [data-automation-id="image-overlay-text"] h2,
+    [data-theme="sepia"].hb-active [data-automation-id="image-overlay-text"] h3,
+    [data-theme="sepia"].hb-active [data-automation-id="image-overlay-text"] h4 {
+      color: #5a3e1b !important;
+    }
+    [data-theme="dark"].hb-active [class*="buttonContainer-"] button,
+    [data-theme="dark"].hb-active [class*="buttonContainer-"] a {
+      color: var(--light-red) !important;
+    }
+
+    /* SharePoint left-rail / quick-launch navigation (e.g. "SW Curriculum Home /
+       Teaching and Learning / HKIS Learn ..."). Use multiple selectors to cover
+       different SP versions. The :not() guards prevent us from hiding our own
+       sidebar (which has class .sidebar and aria-label="Handbook navigation"). */
+    #spLeftNav,
+    #SiteNav,
+    [data-automation-id="spNavBar"],
+    [data-automation-id="quickLaunch"],
+    [data-automation-id="QuickLaunch"],
+    [class*="quickLaunch"],
+    [class*="QuickLaunch"],
+    [class*="leftNav"]:not(.sidebar),
+    aside[role="navigation"]:not(.sidebar),
+    div[role="navigation"]:not(.sidebar):not([aria-label="Handbook navigation"]),
+    nav[role="navigation"]:not(.sidebar):not([aria-label="Handbook navigation"]) {
+      display: none !important;
+    }
+  }
+
+  /* ===== GLOBAL TERM POPOVER (rendered in body layer, outside .hb-active scope deliberately) ===== */
+  .hb-term-popover {
+    display: none; position: fixed; z-index: 9999;
+    background: var(--popover-bg); color: var(--popover-text);
+    padding: 0.75rem 1rem; border-radius: 8px;
+    font-size: 0.82rem; line-height: 1.55; width: max-content; max-width: 360px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    pointer-events: none;
+  }
+  .hb-term-popover.visible { display: block; }
+  .hb-term-popover::after { content: ''; position: absolute; border: 7px solid transparent; }
+  .hb-term-popover.arrow-bottom::after { top: 100%; left: 50%; transform: translateX(-50%); border-top-color: var(--popover-bg); }
+  .hb-term-popover.arrow-top::after { bottom: 100%; left: 50%; transform: translateX(-50%); border-bottom-color: var(--popover-bg); }
+
+  /* ===== PRINT ===== */
+  @media print {
+    .hb-active {
+      .toolbar, .sidebar, .overlay, .progress-bar, .reading-pos { display: none !important; }
+      .main { margin: 0; padding: 1cm; max-width: 100%; }
+    }
+  }
+
+  /* Font-size scaling helper (applied at root via inline style by toolbar JS) */
+  html {
+    font-size: calc(var(--font-size-base) * var(--font-scale));
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--toolbar-height) + 1.5rem);
+  }
+}

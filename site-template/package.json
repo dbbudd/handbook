@@ -1,0 +1,16 @@
+{
+  "name": "handbook-site-template",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Builds the PnP provisioning template for the HKIS Teaching & Learning Handbook from index.html",
+  "scripts": {
+    "build": "node build-template.mjs",
+    "build:seed": "node build-template.mjs --seed-content",
+    "build:reset": "node build-template.mjs --seed-content --reset-content",
+    "build:seeder": "node build-seeder.mjs"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  }
+}

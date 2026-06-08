@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+    <ClientSideComponentInstance
+        Title="HandbookExperience"
+        Location="ClientSideExtension.ApplicationCustomizer"
+        ComponentId="b5e5ec29-d941-4867-b37e-d035f0d3c7e0"
+        Properties="{&quot;testMessage&quot;:&quot;Test message&quot;}">
+    </ClientSideComponentInstance>
+    <ClientSideComponentInstance
+        Title="GlossaryTooltips"
+        Location="ClientSideExtension.ApplicationCustomizer"
+        ComponentId="831afe5f-a03c-4753-b219-5bdc737ed7a4"
+        Properties="{}">
+    </ClientSideComponentInstance>
+</Elements>
