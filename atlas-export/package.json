@@ -1,0 +1,18 @@
+{
+  "name": "atlas-export",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Export HKIS curriculum data from Rubicon Atlas (OnAtlas) via the official API into a Markdown archive.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "probe": "node probe.mjs",
+    "extract": "node extract.mjs",
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "turndown": "^7.2.0"
+  }
+}
