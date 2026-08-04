@@ -1,6 +1,6 @@
 {
   "name": "hkis-handbook",
-  "version": "1.0.1",
+  "version": "1.0.9",
   "private": true,
   "engines": {
     "node": ">=22.14.0 < 23.0.0"

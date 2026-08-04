@@ -3,7 +3,7 @@
   "solution": {
     "name": "hkis-handbook-client-side-solution",
     "id": "73110c02-1e20-464a-bf60-f34e9c6fec2b",
-    "version": "1.0.7.0",
+    "version": "1.0.9.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
@@ -30,7 +30,7 @@
         "title": "Application Extension - Deployment of custom action",
         "description": "Deploys a custom action with ClientSideComponentId association",
         "id": "e92fcd2c-93d3-44d3-b657-b4ea5dd1756a",
-        "version": "1.0.7.0",
+        "version": "1.0.9.0",
         "assets": {
           "elementManifests": [
             "elements.xml",

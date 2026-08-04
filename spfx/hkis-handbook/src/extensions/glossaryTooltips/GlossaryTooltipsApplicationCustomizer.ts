@@ -1,8 +1,34 @@
 import { Log } from '@microsoft/sp-core-library';
 import { BaseApplicationCustomizer } from '@microsoft/sp-application-base';
+import { mark, scheduleDump } from '../shared/hbTiming';
 
 const LOG_SOURCE = 'GlossaryTooltipsApplicationCustomizer';
 const HANDBOOK_PAGE_PATH = '/sitepages/home1.aspx';
+
+// Module-evaluation mark — see hbTiming.ts. This is a SEPARATE bundle from
+// HandbookExperience, so comparing the two "bundle evaluated" marks also shows
+// whether SharePoint loads the two customizers together or staggers them.
+mark('glossary', 'bundle evaluated');
+
+const stripTrailingSlash = (s: string): string => s.replace(/\/+$/, '');
+
+/**
+ * Same widened guard as HandbookExperience — see the long comment there. Kept as
+ * a local copy rather than shared because the two customizers are deliberately
+ * independent (CLAUDE.md §3: each must survive the other failing), and a shared
+ * guard would couple their activation logic.
+ */
+const matchHandbookPath = (
+  pathname: string,
+  targetPath: string,
+  webServerRelativeUrl: string
+): 'page' | 'site-root' | undefined => {
+  const path = stripTrailingSlash(pathname.toLowerCase());
+  if (path.indexOf(targetPath, path.length - targetPath.length) !== -1) return 'page';
+  const web = stripTrailingSlash((webServerRelativeUrl || '').toLowerCase());
+  if (web.length > 0 && path === web) return 'site-root';
+  return undefined;
+};
 const POPOVER_ID = 'hb-term-popover';
 
 const LIST_TITLE = 'Glossary';
@@ -35,9 +61,10 @@ export default class GlossaryTooltipsApplicationCustomizer
   public onInit(): Promise<void> {
     const targetPath = (this.properties.pagePath || HANDBOOK_PAGE_PATH).toLowerCase();
     const currentPath = window.location.pathname.toLowerCase();
+    const webUrl = this.context.pageContext.web.serverRelativeUrl;
 
-    if (currentPath.indexOf(targetPath, currentPath.length - targetPath.length) === -1) {
-      Log.info(LOG_SOURCE, `Skipping: ${currentPath} does not match ${targetPath}`);
+    if (matchHandbookPath(currentPath, targetPath, webUrl) === undefined) {
+      Log.info(LOG_SOURCE, `Skipping: ${currentPath} matches neither ${targetPath} nor the site root ${webUrl}`);
       return Promise.resolve();
     }
 
@@ -97,9 +124,13 @@ export default class GlossaryTooltipsApplicationCustomizer
     // Load list + start wrapping. Failures are silent — prototype-inline
     // .term spans still work without the list.
     console.log('[hb-glossary] activate() ran — fetching list...');
+    mark('glossary', 'activate() entered');
+    scheduleDump(12000);
+
     this.loadGlossary()
       .then(terms => {
         console.log(`[hb-glossary] Loaded ${terms.length} terms from list "${this.listTitle()}"`);
+        mark('glossary', 'glossary terms ready', `${terms.length} terms`);
         if (terms.length > 0) {
           this.buildMatcher(terms);
           this.waitForContentThenWrap();
@@ -107,6 +138,7 @@ export default class GlossaryTooltipsApplicationCustomizer
       })
       .catch(err => {
         console.error('[hb-glossary] Glossary list load failed:', err);
+        mark('glossary', '!!! glossary load FAILED', String(err));
       });
   }
 
@@ -173,6 +205,7 @@ export default class GlossaryTooltipsApplicationCustomizer
       if (raw) {
         const parsed = JSON.parse(raw) as { expires: number; terms: IGlossaryTerm[] };
         if (parsed.expires > Date.now() && Array.isArray(parsed.terms)) {
+          mark('glossary', 'terms from CACHE (no network)');
           return parsed.terms;
         }
       }
@@ -184,10 +217,13 @@ export default class GlossaryTooltipsApplicationCustomizer
       `${siteUrl}/_api/web/lists/getByTitle('${encodeURIComponent(this.listTitle())}')` +
       `/items?$select=Title,Definition&$top=${MAX_TERMS}`;
 
+    mark('glossary', 'REST fetch started (cache miss)');
+    const fetchStart = performance.now();
     const res = await fetch(endpoint, {
       credentials: 'include',
       headers: { accept: 'application/json;odata=nometadata' }
     });
+    mark('glossary', 'REST fetch returned', `took ${Math.round(performance.now() - fetchStart)}ms`);
     if (!res.ok) {
       throw new Error(`HTTP ${res.status} fetching glossary list`);
     }
@@ -231,26 +267,101 @@ export default class GlossaryTooltipsApplicationCustomizer
       '[data-automation-id="mainScrollRegionInnerContent"], [data-automation-id="contentScrollRegion"]'
     );
     if (content) {
+      // Time the first wrap. This is a TreeWalker over every text node in a
+      // ~290KB document, so it is the glossary's single biggest cost and a prime
+      // suspect for main-thread contention right after the chrome appears.
+      const t0 = performance.now();
       this.wrapAllTerms(content);
+      mark('glossary', 'first wrap pass complete', `took ${Math.round(performance.now() - t0)}ms`);
+
       this.attachContentObserver(content);
       window.setTimeout(() => this.wrapAllTerms(content), 800);
       return;
     }
     if (retries > 0) {
       window.setTimeout(() => this.waitForContentThenWrap(retries - 1), 250);
+    } else {
+      mark('glossary', '!!! GAVE UP waiting for SP canvas', '20 retries exhausted — no terms wrapped');
     }
   }
+
+  // Re-wrap churn control.
+  //
+  // Measured on the live page (v1.0.8.0 instrumentation): the observer fired 8
+  // full re-wraps, still going at 35 SECONDS after load, 20–90ms each. Each one
+  // is a TreeWalker over every text node in the document, running while someone
+  // is trying to read.
+  //
+  // The cause is NOT a feedback loop from our own mutations — wrapAllTerms
+  // already disconnects before it edits and reattaches after. It is SharePoint
+  // itself: this page has 123 canvas controls and SP keeps lazily rendering and
+  // re-rendering them long after load, and every one of those mutations used to
+  // buy a full document re-walk.
+  //
+  // Two changes:
+  //
+  //   1. Stop watching characterData. New glossary-eligible content always
+  //      arrives as new ELEMENTS (childList) — a text node whose value changes
+  //      in place can't introduce a term we haven't already considered. SP
+  //      re-renders text nodes constantly, so this was the noisiest trigger and
+  //      the least useful.
+  //   2. Settle and stop. wrapAllTerms now reports how many NEW occurrences it
+  //      wrapped. Three consecutive passes that wrap nothing means the page has
+  //      stopped producing new content, so we disconnect for good. Any pass that
+  //      does find something resets the counter, so a genuinely late-rendering
+  //      section is still caught.
+  //
+  // Disconnecting permanently is safe here: the only way content changes after
+  // that point is a page edit, and the edit-mode watcher reloads the page on the
+  // way back out of edit mode, which re-runs everything from scratch.
+  private rewrapCount = 0;
+  private zeroYieldPasses = 0;
+  private static readonly SETTLE_AFTER_ZERO_YIELD_PASSES = 3;
 
   private attachContentObserver(target: HTMLElement): void {
     if (this.contentObserver) this.contentObserver.disconnect();
     this.contentObserver = new MutationObserver(() => {
       if (this.wrapDebounce) window.clearTimeout(this.wrapDebounce);
-      this.wrapDebounce = window.setTimeout(() => this.wrapAllTerms(target), 500);
+      this.wrapDebounce = window.setTimeout(() => {
+        this.rewrapCount += 1;
+        const t0 = performance.now();
+
+        // NB: wrapAllTerms reattaches the observer on its way out, so the
+        // settle check below has to run AFTER it, or it would be undone.
+        const wrapped = this.wrapAllTerms(target);
+        const tookMs = Math.round(performance.now() - t0);
+
+        if (wrapped > 0) {
+          this.zeroYieldPasses = 0;
+        } else {
+          this.zeroYieldPasses += 1;
+        }
+
+        if (this.rewrapCount <= 10) {
+          mark(
+            'glossary',
+            `re-wrap #${this.rewrapCount} (observer)`,
+            `took ${tookMs}ms, wrapped ${wrapped}, zero-yield streak ${this.zeroYieldPasses}`
+          );
+        }
+
+        if (this.zeroYieldPasses >= GlossaryTooltipsApplicationCustomizer.SETTLE_AFTER_ZERO_YIELD_PASSES) {
+          if (this.contentObserver) {
+            this.contentObserver.disconnect();
+            this.contentObserver = null;
+          }
+          if (this.wrapDebounce) {
+            window.clearTimeout(this.wrapDebounce);
+            this.wrapDebounce = null;
+          }
+          console.log(`[hb-glossary] Settled after ${this.rewrapCount} re-wraps — observer disconnected.`);
+          mark('glossary', 'settled — observer disconnected', `after ${this.rewrapCount} re-wraps`);
+        }
+      }, 800);
     });
     this.contentObserver.observe(target, {
       childList: true,
-      subtree: true,
-      characterData: true
+      subtree: true
     });
   }
 
@@ -271,8 +382,10 @@ export default class GlossaryTooltipsApplicationCustomizer
   // built by the separate HandbookExperience customizer from headings.
   //
   // We pause the MutationObserver during DOM mutations to avoid feedback loops.
-  private wrapAllTerms(scope: HTMLElement): void {
-    if (!this.termRegex) return;
+  // Returns the number of NEW occurrences wrapped, so attachContentObserver can
+  // tell a productive pass from a wasted one and settle once the page goes quiet.
+  private wrapAllTerms(scope: HTMLElement): number {
+    if (!this.termRegex) return 0;
 
     const wasObserving = !!this.contentObserver;
     if (this.contentObserver) this.contentObserver.disconnect();
@@ -382,6 +495,8 @@ export default class GlossaryTooltipsApplicationCustomizer
     if (wasObserving) {
       this.attachContentObserver(scope);
     }
+
+    return wrappedCount;
   }
 
   // Wrap the first regex match in this text node whose term has NOT already

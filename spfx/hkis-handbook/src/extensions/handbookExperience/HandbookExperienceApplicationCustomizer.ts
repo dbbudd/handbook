@@ -1,9 +1,62 @@
 import { Log } from '@microsoft/sp-core-library';
 import { BaseApplicationCustomizer } from '@microsoft/sp-application-base';
+import { mark, scheduleDump } from '../shared/hbTiming';
 import './HandbookExperience.module.scss';
 
 const LOG_SOURCE = 'HandbookExperienceApplicationCustomizer';
 const HANDBOOK_PAGE_PATH = '/sitepages/home1.aspx';
+
+// First executable statement in the bundle. Recording it here — at module
+// evaluation, before the class is even defined — is what separates "SharePoint
+// fetched our code late" from "our code ran slowly once it arrived".
+mark('experience', 'bundle evaluated');
+
+// SharePoint lazy-renders this long page, so the canvas may not exist when we
+// first look. These two govern the polling ladder in waitForContentThenWatch —
+// 20 x 250ms = up to 5s before we give up on wiring the sidebar and FAQs.
+const CONTENT_WAIT_RETRIES = 20;
+const CONTENT_WAIT_INTERVAL_MS = 250;
+
+const stripTrailingSlash = (s: string): string => s.replace(/\/+$/, '');
+
+/**
+ * Decide whether the current URL is the handbook page, and report HOW it matched.
+ *
+ * There are two legitimate ways to be on it:
+ *
+ *   1. 'page'      — the explicit URL, .../SitePages/Home1.aspx
+ *   2. 'site-root' — the site root. Home1.aspx is now the site's welcome page,
+ *                    and depending on how SharePoint serves a welcome page the
+ *                    pathname can remain /sites/Curriculum with no /SitePages/…
+ *                    suffix at all.
+ *
+ * Case 2 is why this helper exists. The previous guard was a strict endsWith on
+ * '/sitepages/home1.aspx', so anyone arriving via the site root — a bookmark of
+ * the root, a "Curriculum" link in site navigation, or the hub nav — would get a
+ * completely bare page: no toolbar, no sidebar, no themes, and no error message
+ * to explain it. Silent total failure, and it only became reachable when
+ * Home1.aspx was promoted to the default home page.
+ *
+ * The site root is matched against `web.serverRelativeUrl` from the page context
+ * rather than a hard-coded '/sites/curriculum', so the guard survives a site
+ * move or rename. Trailing slashes are stripped from both sides so
+ * /sites/Curriculum and /sites/Curriculum/ behave identically.
+ *
+ * The return value is a discriminated string rather than a boolean because it
+ * gets recorded as a timing mark — so one instrumented page load also tells us
+ * which of the two paths real users actually arrive on.
+ */
+const matchHandbookPath = (
+  pathname: string,
+  targetPath: string,
+  webServerRelativeUrl: string
+): 'page' | 'site-root' | undefined => {
+  const path = stripTrailingSlash(pathname.toLowerCase());
+  if (path.indexOf(targetPath, path.length - targetPath.length) !== -1) return 'page';
+  const web = stripTrailingSlash((webServerRelativeUrl || '').toLowerCase());
+  if (web.length > 0 && path === web) return 'site-root';
+  return undefined;
+};
 
 const FONTS: Record<string, string> = {
   sans: "'Libre Franklin','Franklin Gothic','ITC Franklin Gothic','Helvetica Neue',Helvetica,Arial,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
@@ -102,11 +155,16 @@ export default class HandbookExperienceApplicationCustomizer
   public onInit(): Promise<void> {
     const targetPath = (this.properties.pagePath || HANDBOOK_PAGE_PATH).toLowerCase();
     const currentPath = window.location.pathname.toLowerCase();
+    const webUrl = this.context.pageContext.web.serverRelativeUrl;
 
-    if (currentPath.indexOf(targetPath, currentPath.length - targetPath.length) === -1) {
-      Log.info(LOG_SOURCE, `Skipping: ${currentPath} does not match ${targetPath}`);
+    mark('experience', 'onInit entered', `pathname=${currentPath}`);
+
+    const matchedVia = matchHandbookPath(currentPath, targetPath, webUrl);
+    if (matchedVia === undefined) {
+      Log.info(LOG_SOURCE, `Skipping: ${currentPath} matches neither ${targetPath} nor the site root ${webUrl}`);
       return Promise.resolve();
     }
+    mark('experience', `URL matched via "${matchedVia}"`, `site root is ${webUrl}`);
 
     // Bail out entirely in edit mode.
     //
@@ -130,14 +188,21 @@ export default class HandbookExperienceApplicationCustomizer
     const mode = (new URLSearchParams(window.location.search).get('Mode') || '').toLowerCase();
     if (mode === 'edit') {
       Log.info(LOG_SOURCE, 'Edit mode (?Mode=Edit) detected — handbook experience disabled to leave the SP editor untouched.');
+      mark('experience', 'skipped: edit mode');
       return Promise.resolve();
     }
 
     Log.info(LOG_SOURCE, `Activating handbook experience on ${currentPath}`);
 
+    // This branch is one of the three candidate explanations for the ~20s delay:
+    // if SharePoint hands us control while the document is still parsing, every
+    // visible thing we do waits on DOMContentLoaded. Recording which way it went
+    // costs nothing and rules the branch in or out on the first instrumented load.
     if (document.readyState === 'loading') {
+      mark('experience', 'activate() DEFERRED to DOMContentLoaded', 'readyState was "loading"');
       document.addEventListener('DOMContentLoaded', () => this.activate());
     } else {
+      mark('experience', 'activate() called immediately', `readyState was "${document.readyState}"`);
       this.activate();
     }
 
@@ -200,6 +265,8 @@ export default class HandbookExperienceApplicationCustomizer
 
     this.activated = true;
 
+    mark('experience', 'activate() entered');
+
     this.loadFonts();
 
     const root = document.documentElement;
@@ -222,6 +289,11 @@ export default class HandbookExperienceApplicationCustomizer
     this.injectReadingPos();
     this.injectAgentsFab();
 
+    // THE number that matters. Everything the user perceives as "the template
+    // loaded" — theme tokens, toolbar, restyled content — is on screen by now.
+    // Whatever gap sits between navigation start and this mark IS the ~20s.
+    mark('experience', '>>> CHROME VISIBLE (toolbar + theme applied)');
+
     // When embedded (Teams tab, iframe), Copilot isn't reachable in-context.
     // Update both Agents button tooltips so users know what the click does.
     if (this.isEmbeddedContext()) {
@@ -243,6 +315,13 @@ export default class HandbookExperienceApplicationCustomizer
     this.waitForContentThenWatch();
 
     this.startEditModeWatcher();
+
+    // Print the timeline once things have settled. 12s is chosen to sit past the
+    // retry ladder in waitForContentThenWatch (up to 5s), its +800ms second pass,
+    // and the glossary's fetch + first wrap — so the table is complete when it
+    // prints. scheduleDump() is shared, so whichever customizer settles last wins
+    // the timer and the single table contains both customizers' marks.
+    scheduleDump(12000);
   }
 
   // ===== Edit-mode watcher =====
@@ -412,20 +491,45 @@ export default class HandbookExperienceApplicationCustomizer
   }
 
   // Wait for SP to render the canvas, then build TOC and attach an observer.
-  private waitForContentThenWatch(retries = 20): void {
+  private waitForContentThenWatch(retries = CONTENT_WAIT_RETRIES): void {
     const content = document.querySelector(
       '[data-automation-id="mainScrollRegionInnerContent"], [data-automation-id="contentScrollRegion"]'
     ) as HTMLElement | null;
 
     if (content) {
+      const attempt = CONTENT_WAIT_RETRIES - retries;
+      mark(
+        'experience',
+        'SP canvas found',
+        `after ${attempt} ${attempt === 1 ? 'retry' : 'retries'} (${attempt * CONTENT_WAIT_INTERVAL_MS}ms of polling)`
+      );
+
+      // Time the first content pass. On a page with 118 FAQs this is the most
+      // expensive synchronous work we do, and it tells us whether the tail after
+      // the chrome appears is our DOM walking or SharePoint still hydrating.
+      const t0 = performance.now();
       this.rebuildSidebarAndSpy();
+      mark(
+        'experience',
+        'first content pass complete',
+        `wireCollapsibles + wireCtaCards + buildSidebar + scrollSpy took ${Math.round(performance.now() - t0)}ms`
+      );
+
       this.attachContentObserver(content);
       // A second build a moment later catches any late-rendering collapsibles.
       window.setTimeout(() => this.rebuildSidebarAndSpy(), 800);
       return;
     }
     if (retries > 0) {
-      window.setTimeout(() => this.waitForContentThenWatch(retries - 1), 250);
+      window.setTimeout(() => this.waitForContentThenWatch(retries - 1), CONTENT_WAIT_INTERVAL_MS);
+    } else {
+      // Previously a silent give-up: no sidebar, no FAQ collapsibles, no
+      // explanation. Worth knowing about if it ever fires.
+      mark(
+        'experience',
+        '!!! GAVE UP waiting for SP canvas',
+        `${CONTENT_WAIT_RETRIES} retries exhausted — no sidebar or FAQ wiring this load`
+      );
     }
   }
 
